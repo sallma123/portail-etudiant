@@ -15,27 +15,34 @@ public class DataInitializer {
     @Bean
     CommandLineRunner init(RoleRepository roleRepo, UserRepository userRepo, BCryptPasswordEncoder encoder) {
         return args -> {
-            // 🔁 Création des rôles si non existants
-            if (roleRepo.findByName("ADMIN").isEmpty()) {
-                roleRepo.save(new Role(null, "ADMIN"));
-                roleRepo.save(new Role(null, "ETUDIANT"));
-                roleRepo.save(new Role(null, "PROF"));
-            }
 
-            // 🔁 Création d'un utilisateur admin
+            // ❌ Supprimer anciens rôles incorrects si présents
+            roleRepo.findByName("ADMIN").ifPresent(roleRepo::delete);
+            roleRepo.findByName("ETUDIANT").ifPresent(roleRepo::delete);
+            roleRepo.findByName("PROF").ifPresent(roleRepo::delete);
+
+            // ✅ Créer les rôles corrects s'ils n'existent pas
+            if (roleRepo.findByName("ROLE_ADMIN").isEmpty())
+                roleRepo.save(new Role(null, "ROLE_ADMIN"));
+            if (roleRepo.findByName("ROLE_ETUDIANT").isEmpty())
+                roleRepo.save(new Role(null, "ROLE_ETUDIANT"));
+            if (roleRepo.findByName("ROLE_ENSEIGNANT").isEmpty())
+                roleRepo.save(new Role(null, "ROLE_ENSEIGNANT"));
+
+            // ✅ Créer un utilisateur admin si inexistant
             if (userRepo.findByEmail("salmasedrati13@gmail.com").isEmpty()) {
-                Role adminRole = roleRepo.findByName("ADMIN").get();
+                Role adminRole = roleRepo.findByName("ROLE_ADMIN").orElseThrow();
 
                 User admin = new User();
                 admin.setEmail("salmasedrati13@gmail.com");
-                admin.setPassword(encoder.encode("1234")); // Mot de passe encodé !
+                admin.setPassword(encoder.encode("1234"));
                 admin.setNom("Admin");
                 admin.setPrenom("Portail");
                 admin.setEnabled(true);
                 admin.setRole(adminRole);
 
                 userRepo.save(admin);
-                System.out.println("✅ Admin ajouté avec email: admin@example.com et mot de passe: 1234");
+                System.out.println("✅ Admin créé : salmasedrati13@gmail.com / 1234");
             }
         };
     }

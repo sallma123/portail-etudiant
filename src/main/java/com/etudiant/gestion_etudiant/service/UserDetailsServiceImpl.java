@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.*;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -25,7 +24,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         List<GrantedAuthority> authorities = List.of(
-                new SimpleGrantedAuthority("ROLE_" + user.getRole().getName())  // Ajout "ROLE_"
+                new SimpleGrantedAuthority(user.getRole().getName()) // ✅ rôle correct déjà dans la base
         );
 
         return new org.springframework.security.core.userdetails.User(
@@ -34,5 +33,4 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 authorities
         );
     }
-
 }

@@ -9,7 +9,7 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name; // ADMIN, ETUDIANT, PROF
+    private String name;
 
     // ✅ Constructeur vide requis par JPA
     public Role() {}

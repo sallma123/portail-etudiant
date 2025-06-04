@@ -1,13 +1,11 @@
 package com.etudiant.gestion_etudiant.controller;
 
-import com.etudiant.gestion_etudiant.entity.User;
 import com.etudiant.gestion_etudiant.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
 
 @Controller
 public class PageController {
@@ -20,13 +18,16 @@ public class PageController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // ✅ Page de login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
                             Model model) {
+
         if (error != null) {
-            String msg = error.equals("unauthorized") ? "Accès non autorisé." : "Identifiants invalides !";
-            model.addAttribute("error", msg);
+            model.addAttribute("error", error.equals("unauthorized")
+                    ? "Accès non autorisé."
+                    : "Identifiants invalides !");
         }
 
         if (resetSuccess != null) {
@@ -36,46 +37,40 @@ public class PageController {
         return "login";
     }
 
+    // ✅ Tableau de bord ADMIN
     @GetMapping("/admin/dashboard")
-    public String adminPage(HttpSession session) {
-        String role = (String) session.getAttribute("role");
-        if ("ADMIN".equals(role)) {
-            return "admin";
+    public String adminDashboard(Authentication auth, Model model) {
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+
+            long nbEtudiants = userRepo.countByRole_Name("ROLE_ETUDIANT");
+            long nbEnseignants = userRepo.countByRole_Name("ROLE_ENSEIGNANT");
+
+            model.addAttribute("nbEtudiants", nbEtudiants);
+            model.addAttribute("nbEnseignants", nbEnseignants);
+
+            return "admin-dashboard";
         }
         return "redirect:/login?error=unauthorized";
     }
 
+    // ✅ Tableau de bord ÉTUDIANT
     @GetMapping("/etudiant/dashboard")
-    public String etudiantPage(HttpSession session) {
-        String role = (String) session.getAttribute("role");
-        if ("ETUDIANT".equals(role)) {
+    public String etudiantDashboard(Authentication auth) {
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ETUDIANT"))) {
             return "etudiant";
         }
         return "redirect:/login?error=unauthorized";
     }
 
+    // ✅ Tableau de bord ENSEIGNANT
     @GetMapping("/enseignant/dashboard")
-    public String enseignantPage(HttpSession session) {
-        String role = (String) session.getAttribute("role");
-        if ("ENSEIGNANT".equals(role)) {
+    public String enseignantDashboard(Authentication auth) {
+        if (auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ENSEIGNANT"))) {
             return "enseignant";
         }
         return "redirect:/login?error=unauthorized";
-    }
-
-    @GetMapping("/redirect-after-login")
-    public String redirectAfterLogin(HttpSession session, Authentication auth) {
-        String email = auth.getName();
-        User user = userRepo.findByEmail(email).orElse(null);
-
-        if (user != null) {
-            session.setAttribute("role", user.getRole().getName());
-            switch (user.getRole().getName()) {
-                case "ADMIN": return "redirect:/admin/dashboard";
-                case "ETUDIANT": return "redirect:/etudiant/dashboard";
-                case "ENSEIGNANT": return "redirect:/enseignant/dashboard";
-            }
-        }
-        return "redirect:/login?error=true";
     }
 }

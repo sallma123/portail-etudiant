@@ -2,17 +2,14 @@ package com.etudiant.gestion_etudiant.config;
 
 import com.etudiant.gestion_etudiant.security.JwtFilter;
 import com.etudiant.gestion_etudiant.service.UserDetailsServiceImpl;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -55,11 +52,19 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login") // page personnalisée
-                .loginProcessingUrl("/auth/login-page") // le POST
-                .usernameParameter("email") // ← indique à Spring d’utiliser “email”
-                .passwordParameter("password") // ← optionnel, pour être explicite
-                .defaultSuccessUrl("/redirect-after-login", true)
+                .loginPage("/login")
+                .loginProcessingUrl("/auth/login-page")
+                .usernameParameter("email")
+                .passwordParameter("password")
+                .successHandler((request, response, authentication) -> {
+                    String role = authentication.getAuthorities().iterator().next().getAuthority();
+                    switch (role) {
+                        case "ROLE_ADMIN" -> response.sendRedirect("/admin/dashboard");
+                        case "ROLE_ETUDIANT" -> response.sendRedirect("/etudiant/dashboard");
+                        case "ROLE_ENSEIGNANT" -> response.sendRedirect("/enseignant/dashboard");
+                        default -> response.sendRedirect("/login?error=unauthorized");
+                    }
+                })
                 .failureUrl("/login?error=true")
                 .and()
                 .logout()
@@ -69,5 +74,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 }
