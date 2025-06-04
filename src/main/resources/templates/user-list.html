@@ -28,12 +28,21 @@
         .btn-primary:hover {
             background-color: #5e3b89;
         }
+        .btn-outline-danger, .btn-outline-primary {
+            border-radius: 20px;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h3 class="mb-4 text-center text-primary">📋 Gestion des utilisateurs</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-primary">📋 Gestion des utilisateurs</h3>
+        <!-- ✅ Bouton de déconnexion -->
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-sm btn-outline-danger"> Déconnexion</button>
+        </form>
+    </div>
 
     <div class="text-end mb-3">
         <a href="/admin/users/new" class="btn btn-primary">➕ Ajouter un utilisateur</a>
