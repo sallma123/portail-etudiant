@@ -71,7 +71,7 @@ public class PasswordResetController {
         return "reset-password";
     }
 
-    @PostMapping("/reset-password/submit")
+    @PostMapping("/reset-password")
     public String handleReset(@RequestParam String token, @RequestParam String newPassword, Model model) {
         Optional<PasswordResetToken> tokenOpt = tokenRepository.findByToken(token);
         if (tokenOpt.isEmpty() || tokenOpt.get().getExpiryDate().isBefore(LocalDateTime.now())) {
@@ -84,7 +84,7 @@ public class PasswordResetController {
         userRepository.save(user);
         tokenRepository.delete(tokenOpt.get());
 
-        model.addAttribute("message", "Mot de passe mis à jour avec succès !");
-        return "login";
+        return "redirect:/login?resetSuccess=true";
+
     }
 }

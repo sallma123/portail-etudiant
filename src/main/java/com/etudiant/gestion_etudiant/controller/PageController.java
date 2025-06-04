@@ -9,8 +9,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 
-import java.util.Optional;
-
 @Controller
 public class PageController {
 
@@ -23,14 +21,20 @@ public class PageController {
     }
 
     @GetMapping("/login")
-    public String loginPage(@RequestParam(value = "error", required = false) String error, Model model) {
+    public String loginPage(@RequestParam(value = "error", required = false) String error,
+                            @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
+                            Model model) {
         if (error != null) {
             String msg = error.equals("unauthorized") ? "Accès non autorisé." : "Identifiants invalides !";
             model.addAttribute("error", msg);
         }
+
+        if (resetSuccess != null) {
+            model.addAttribute("message", "Votre mot de passe a été réinitialisé avec succès.");
+        }
+
         return "login";
     }
-
 
     @GetMapping("/admin/dashboard")
     public String adminPage(HttpSession session) {
@@ -58,6 +62,7 @@ public class PageController {
         }
         return "redirect:/login?error=unauthorized";
     }
+
     @GetMapping("/redirect-after-login")
     public String redirectAfterLogin(HttpSession session, Authentication auth) {
         String email = auth.getName();
@@ -73,5 +78,4 @@ public class PageController {
         }
         return "redirect:/login?error=true";
     }
-
 }

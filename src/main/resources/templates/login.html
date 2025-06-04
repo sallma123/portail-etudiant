@@ -48,6 +48,9 @@
 <div class="card">
     <h3 class="text-center mb-4">Connexion</h3>
 
+    <!-- ✅ Message succès après réinitialisation -->
+    <div th:if="${message}" class="alert alert-success text-center mb-3" role="alert" th:text="${message}"></div>
+
     <form th:action="@{/auth/login-page}" method="post">
         <div class="mb-3">
             <label for="email" class="form-label">Email :</label>
@@ -61,6 +64,7 @@
 
         <button type="submit" class="btn btn-primary w-100">Se connecter</button>
 
+        <!-- 🔴 Erreur identifiants -->
         <div th:if="${error}" class="error text-center">
             <p th:text="${error}">Identifiants invalides !</p>
         </div>
@@ -69,12 +73,12 @@
             <a href="/forgot-password">Mot de passe oublié ?</a>
         </div>
     </form>
+
     <div class="text-center mt-3">
         <a href="/forgot-password" style="font-size: 0.9rem; color: #764ba2; text-decoration: underline;">
             Mot de passe oublié ?
         </a>
     </div>
-
 </div>
 
 </body>
