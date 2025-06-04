@@ -1,6 +1,7 @@
 package com.etudiant.gestion_etudiant.entity;
 
 import jakarta.persistence.*;
+import java.util.List;
 
 @Entity
 public class User {
@@ -19,6 +20,9 @@ public class User {
     private Role role;
 
     private String resetToken; // ✅ Ajout du token de réinitialisation
+
+    @OneToMany(mappedBy = "enseignant", cascade = CascadeType.ALL)
+    private List<Cours> coursEnseignes; // ✅ Ajout de la liste des cours enseignés
 
     // Getters & Setters
     public Long getId() { return id; }
@@ -44,4 +48,12 @@ public class User {
 
     public String getResetToken() { return resetToken; }
     public void setResetToken(String resetToken) { this.resetToken = resetToken; }
+
+    public List<Cours> getCoursEnseignes() {
+        return coursEnseignes;
+    }
+
+    public void setCoursEnseignes(List<Cours> coursEnseignes) {
+        this.coursEnseignes = coursEnseignes;
+    }
 }

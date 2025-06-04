@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mes cours</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light p-4">
+
+<div class="container">
+    <h2 class="mb-4">📚 Mes cours</h2>
+
+    <a href="/enseignant/ajouter-cours" class="btn btn-primary mb-3">➕ Ajouter un nouveau cours</a>
+
+    <table class="table table-bordered table-hover">
+        <thead class="table-light">
+        <tr>
+            <th>Titre</th>
+            <th>Description</th>
+            <th>Catégorie</th>
+            <th>Date de création</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="cours : ${coursList}">
+            <td th:text="${cours.titre}"></td>
+            <td th:text="${cours.description}"></td>
+            <td th:text="${cours.categorie}"></td>
+            <td th:text="${cours.dateCreation}"></td>
+            <td>
+                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-support'}"
+                   class="btn btn-sm btn-outline-primary">📁 Ajouter support</a>
+                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
+                   class="btn btn-sm btn-outline-secondary">📄 Voir supports</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
