@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${user.id == null} ? 'Ajouter' : 'Modifier'">Utilisateur</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .card {
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 500px;
+    }
+    .btn-primary {
+      background-color: #764ba2;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #5e3b89;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h3 class="text-center mb-4 text-primary" th:text="${user.id == null} ? 'Ajouter un utilisateur' : 'Modifier utilisateur'"></h3>
+
+  <div th:if="${emailError}" class="alert alert-danger" th:text="${emailError}"></div>
+
+  <!-- Formulaire d'ajout -->
+  <form th:if="${user.id == null}" th:action="@{/admin/users}" th:object="${user}" method="post">
+    <div class="mb-3">
+      <label for="nom-ajout" class="form-label">Nom</label>
+      <input type="text" th:field="*{nom}" id="nom-ajout" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="prenom-ajout" class="form-label">Prénom</label>
+      <input type="text" th:field="*{prenom}" id="prenom-ajout" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email-ajout" class="form-label">Email</label>
+      <input type="email" th:field="*{email}" id="email-ajout" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="password-ajout" class="form-label">Mot de passe</label>
+      <input type="password" th:field="*{password}" id="password-ajout" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="role-ajout" class="form-label">Rôle</label>
+      <select name="roleId" class="form-select" id="role-ajout" required>
+        <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.name}"></option>
+      </select>
+    </div>
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary">💾 Enregistrer</button>
+      <a href="/admin/users" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+
+  <!-- Formulaire de modification -->
+  <form th:if="${user.id != null}" th:action="@{'/admin/users/update/' + ${user.id}}" th:object="${user}" method="post">
+    <div class="mb-3">
+      <label for="nom-modif" class="form-label">Nom</label>
+      <input type="text" th:field="*{nom}" id="nom-modif" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="prenom-modif" class="form-label">Prénom</label>
+      <input type="text" th:field="*{prenom}" id="prenom-modif" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="email-modif" class="form-label">Email</label>
+      <input type="email" th:field="*{email}" id="email-modif" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="password-modif" class="form-label">Mot de passe (laisser vide si inchangé)</label>
+      <input type="password" th:field="*{password}" id="password-modif" class="form-control">
+    </div>
+    <div class="mb-3">
+      <label for="role-modif" class="form-label">Rôle</label>
+      <select name="roleId" class="form-select" id="role-modif" required>
+        <option th:each="r : ${roles}" th:value="${r.id}" th:text="${r.name}" th:selected="${r.id == user.role?.id}"></option>
+      </select>
+    </div>
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-primary">✅ Modifier</button>
+      <a href="/admin/users" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+
+</body>
+</html>
