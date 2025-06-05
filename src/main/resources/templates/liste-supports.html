@@ -40,11 +40,12 @@
                         <h6 class="card-title text-truncate" th:text="${s.nomFichier}">Nom</h6>
                         <p class="text-muted small">Type : <span th:text="${s.type}">Type</span></p>
                     </div>
-                    <div class="mt-2">
-                        <a th:href="${s.lien}" class="btn btn-sm btn-outline-primary me-1" target="_blank">🌐 Voir</a>
-                        <a th:href="@{'/enseignant/support/' + ${s.id} + '/supprimer'}"
-                           class="btn btn-sm btn-danger"
-                           onclick="return confirm('Supprimer ce support ?');">🗑 Supprimer</a>
+                    <div class="mt-2 d-flex justify-content-center gap-2">
+                        <a th:href="${s.lien}" class="btn btn-sm btn-outline-primary" target="_blank">🌐 Voir</a>
+                        <form th:action="@{'/enseignant/support/' + ${s.id} + '/supprimer'}"
+                              method="post" onsubmit="return confirm('Supprimer ce support ?');">
+                            <button type="submit" class="btn btn-sm btn-danger">🗑 Supprimer</button>
+                        </form>
                     </div>
                 </div>
             </div>

@@ -41,7 +41,7 @@ public class PageController {
         this.supportService = supportService;
     }
 
-    // 🔐 Page de login
+    // 🔐 Login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
@@ -56,7 +56,7 @@ public class PageController {
         return "login";
     }
 
-    // 🎓 Dashboards
+    // 👤 Dashboards
     @GetMapping("/enseignant/dashboard")
     public String enseignantDashboard(Authentication auth) {
         return hasRole(auth, "ROLE_ENSEIGNANT") ? "enseignant" : "redirect:/login?error=unauthorized";
@@ -106,7 +106,17 @@ public class PageController {
         return "redirect:/enseignant/mes-cours";
     }
 
-    // ➕ Ajouter un support
+    // 📄 Liste des supports d’un cours
+    @GetMapping("/enseignant/cours/{id}/supports")
+    public String afficherListeSupports(@PathVariable Long id, Model model) {
+        return coursService.getCoursParId(id).map(cours -> {
+            model.addAttribute("cours", cours);
+            model.addAttribute("supports", supportService.getSupportsParCours(cours));
+            return "liste-supports";
+        }).orElse("redirect:/enseignant/mes-cours");
+    }
+
+    // 📁 Ajouter un support
     @GetMapping("/enseignant/cours/{id}/ajouter-support")
     public String afficherFormulaireSupport(@PathVariable Long id, Model model) {
         return coursService.getCoursParId(id).map(cours -> {
@@ -115,7 +125,6 @@ public class PageController {
         }).orElse("redirect:/enseignant/mes-cours");
     }
 
-    // 📁 Upload réel d’un support
     @PostMapping("/enseignant/cours/{id}/upload-support")
     public String uploadSupport(@PathVariable Long id,
                                 @RequestParam("nomFichier") String nomFichier,
@@ -125,7 +134,6 @@ public class PageController {
             Optional<Cours> coursOpt = coursService.getCoursParId(id);
             if (coursOpt.isEmpty()) return "redirect:/enseignant/mes-cours";
 
-            // ✅ Utilise le chemin absolu correct
             String uploadPath = System.getProperty("user.dir") + File.separator + "uploads";
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) uploadDir.mkdirs();
@@ -137,7 +145,7 @@ public class PageController {
             Support support = new Support();
             support.setNomFichier(nomFichier);
             support.setType(type);
-            support.setLien("/fichiers/" + fileName); // utilisé par StaticResourceConfig
+            support.setLien("/fichiers/" + fileName);
             supportService.ajouterSupport(support, coursOpt.get());
 
             System.out.println("✅ Support uploadé : " + fileName);
@@ -145,40 +153,32 @@ public class PageController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "redirect:/enseignant/mes-cours";
+        return "redirect:/enseignant/cours/" + id + "/supports";
     }
 
-    // 📄 Voir tous les supports d’un cours
-    @GetMapping("/enseignant/cours/{id}/supports")
-    public String afficherListeSupports(@PathVariable Long id, Model model) {
-        return coursService.getCoursParId(id).map(cours -> {
-            model.addAttribute("cours", cours);
-            model.addAttribute("supports", supportService.getSupportsParCours(cours));
-            return "liste-supports";
-        }).orElse("redirect:/enseignant/mes-cours");
-    }
-    @GetMapping("/enseignant/support/{id}/supprimer")
+    // 🗑 Supprimer un support (et rester sur la page des supports)
+    @PostMapping("/enseignant/support/{id}/supprimer")
     public String supprimerSupport(@PathVariable Long id) {
         Optional<Support> supportOpt = supportService.getSupportParId(id);
         if (supportOpt.isPresent()) {
-            // Supprimer le fichier physique
-            String lien = supportOpt.get().getLien(); // ex: /fichiers/123_nom.pdf
+            Long coursId = supportOpt.get().getCours().getId();
+
+            // Supprimer le fichier
+            String lien = supportOpt.get().getLien(); // ex: /fichiers/nom.pdf
             String nomFichier = lien.substring(lien.lastIndexOf("/") + 1);
             File fichier = new File(System.getProperty("user.dir") + "/uploads/" + nomFichier);
-            if (fichier.exists()) {
-                fichier.delete();
-            }
+            if (fichier.exists()) fichier.delete();
 
-            // Supprimer en base
             supportService.supprimerSupport(id);
+            return "redirect:/enseignant/cours/" + coursId + "/supports";
         }
         return "redirect:/enseignant/mes-cours";
     }
+
+    // 🗑 Supprimer un cours + ses supports
     @GetMapping("/enseignant/cours/{id}/supprimer")
     public String supprimerCours(@PathVariable Long id) {
         coursService.supprimerCoursEtSupports(id);
         return "redirect:/enseignant/mes-cours";
     }
-
 }
-
