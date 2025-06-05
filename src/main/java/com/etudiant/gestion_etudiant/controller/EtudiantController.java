@@ -11,7 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -68,10 +70,19 @@ public class EtudiantController {
         }
 
         List<Support> supports = supportRepository.findByCours(cours);
+        Map<Long, Boolean> vus = new HashMap<>();
+
+        for (Support s : supports) {
+            boolean vu = supportVuService.estSupportVu(etudiant, s);
+            vus.put(s.getId(), vu);
+        }
+
         model.addAttribute("supports", supports);
         model.addAttribute("cours", cours);
+        model.addAttribute("supportsVus", vus);
         return "support-etudiant";
     }
+
 
     // 🔹 Affiche un support ET le marque comme vu
     @GetMapping("/support/{id}/voir")

@@ -43,7 +43,10 @@
                  th:each="support : ${supports}">
                 <span th:text="${support.nomFichier}">Nom fichier</span>
                 <div class="btn-group">
-                    <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}" class="btn btn-outline-primary btn-sm">✔ Terminé</a>
+                    <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}"
+                       th:class="${supportsVus[support.id]} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'">
+                        ✔ Terminé
+                    </a>
                     <a th:href="${support.lien}" target="_blank" class="btn btn-purple btn-sm">📄 Ouvrir</a>
                 </div>
             </div>

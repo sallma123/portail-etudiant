@@ -24,6 +24,10 @@ public class SupportVuService {
     @Autowired
     private InscriptionRepository inscriptionRepository;
 
+    public boolean estSupportVu(User etudiant, Support support) {
+        return supportVuRepository.existsByEtudiantAndSupport(etudiant, support);
+    }
+
     public void marquerCommeVu(User etudiant, Support support) {
         if (!supportVuRepository.existsByEtudiantAndSupport(etudiant, support)) {
             SupportVu supportVu = new SupportVu();
