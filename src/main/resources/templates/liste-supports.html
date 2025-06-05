@@ -48,7 +48,20 @@
         <a th:href="@{/enseignant/mes-cours}" class="btn btn-purple">↩ Retour</a>
     </div>
 
-    <div class="row row-cols-1 row-cols-md-3 g-4" th:if="${supports != null and !supports.isEmpty()}">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+
+        <!-- ✅ Carte “Ajouter un support” -->
+        <div class="col">
+            <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-support'}"
+               class="text-decoration-none text-center text-dark">
+                <div class="card card-support h-100 d-flex align-items-center justify-content-center" style="font-size: 2rem;">
+                    ➕
+                    <div class="mt-2 fs-6">Ajouter un support</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- 🔁 Boucle des supports -->
         <div class="col" th:each="s : ${supports}">
             <div class="card card-support h-100">
                 <div class="support-icon pt-3">
@@ -71,10 +84,12 @@
                 </div>
             </div>
         </div>
+
     </div>
 
-    <div th:if="${supports == null or supports.isEmpty()}">
-        <p class="text-white text-center mt-4">Aucun support ajouté pour ce cours pour le moment.</p>
+    <!-- 🔔 Message si aucun support -->
+    <div th:if="${supports == null or supports.isEmpty()}" class="text-center mt-4">
+        <p class="text-white">Aucun support ajouté pour ce cours pour le moment.</p>
     </div>
 </div>
 

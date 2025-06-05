@@ -56,10 +56,10 @@
             <td th:text="${cours.categorie}"></td>
             <td th:text="${cours.dateCreation}"></td>
             <td class="d-flex flex-wrap gap-1 justify-content-center">
-                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-support'}"
-                   class="btn btn-sm btn-outline-primary">📁 Ajouter support</a>
                 <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
-                   class="btn btn-sm btn-outline-secondary">📄 Voir supports</a>
+                   class="btn btn-sm btn-outline-primary">📁 Gérer supports</a>
+                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-quiz'}"
+                   class="btn btn-sm btn-outline-success">📝 Gérer quiz</a>
                 <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}"
                    class="btn btn-sm btn-outline-danger"
                    onclick="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce cours ?');">🗑 Supprimer</a>

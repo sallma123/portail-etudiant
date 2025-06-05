@@ -23,14 +23,14 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // ➤ Liste des utilisateurs
+    // Liste des utilisateurs
     @GetMapping
     public String listUsers(Model model) {
         model.addAttribute("users", userRepository.findAll());
         return "user-list";
     }
 
-    // ➤ Formulaire d'ajout
+    // Formulaire d'ajout
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("user", new User());
@@ -38,7 +38,7 @@ public class UserController {
         return "user-form";
     }
 
-    // ➤ Enregistrement d'un nouveau user
+    // Enregistrement d'un nouveau user
     @PostMapping
     public String saveUser(@ModelAttribute("user") User user,
                            @RequestParam("roleId") Long roleId,
