@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface QuestionRepository extends JpaRepository<Question, Long> {
     List<Question> findByQuiz(Quiz quiz);
+    void deleteByQuizId(Long quizId);
+    List<Question> findByQuizId(Long quizId);
+
 }

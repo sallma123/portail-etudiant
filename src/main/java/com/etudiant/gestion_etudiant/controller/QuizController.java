@@ -1,6 +1,5 @@
 package com.etudiant.gestion_etudiant.controller;
 
-import com.etudiant.gestion_etudiant.dto.QuestionFormDto;
 import com.etudiant.gestion_etudiant.entity.Cours;
 import com.etudiant.gestion_etudiant.entity.Question;
 import com.etudiant.gestion_etudiant.entity.Quiz;
@@ -11,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -18,55 +18,61 @@ import java.util.List;
 @RequestMapping("/enseignant")
 public class QuizController {
 
-    @Autowired private QuizService quizService;
-    @Autowired private CoursRepository coursRepository;
+    @Autowired
+    private QuizService quizService;
 
-    // ✅ Formulaire ajout quiz (utilise maintenant creer-quiz.html)
+    @Autowired
+    private CoursRepository coursRepository;
+
+    // ✅ Créer automatiquement un quiz s'il n'existe pas
     @GetMapping("/cours/{id}/ajouter-quiz")
-    public String formAjoutQuiz(@PathVariable Long id, Model model) {
+    public String afficherOuCreerQuiz(@PathVariable Long id, Model model) {
         Cours cours = coursRepository.findById(id).orElseThrow();
-        model.addAttribute("cours", cours);
-        model.addAttribute("quiz", new Quiz());
-        return "creer-quiz"; // 🔁 corriger ici (ancien: ajouter-quiz)
-    }
 
-    // ✅ Traitement ajout quiz
-    @PostMapping("/cours/{id}/ajouter-quiz")
-    public String ajouterQuiz(@PathVariable Long id, @RequestParam String titre, @RequestParam int seuil) {
-        Cours cours = coursRepository.findById(id).orElseThrow();
-        Quiz quiz = quizService.ajouterQuiz(titre, seuil, cours);
-        return "redirect:/enseignant/quiz/" + quiz.getId() + "/creer-question";
-    }
+        Quiz quiz = quizService.getQuizByCours(cours).orElse(null);
+        if (quiz == null) {
+            quiz = quizService.ajouterQuiz("Quiz du cours : " + cours.getTitre(), 50, cours);
+        }
 
-    // ✅ Formulaire stylé pour créer une question avec plusieurs bonnes réponses
-    @GetMapping("/quiz/{quizId}/creer-question")
-    public String creerQuestion(@PathVariable Long quizId, Model model) {
-        Quiz quiz = quizService.getQuizById(quizId);
         model.addAttribute("quiz", quiz);
-        model.addAttribute("formDto", new QuestionFormDto());
         return "creer-quiz";
     }
 
-    // ✅ Traitement du formulaire complet (question + réponses + corrects)
+    // ✅ Affiche le formulaire d'ajout de questions
+    @GetMapping("/quiz/{quizId}/creer-question")
+    public String creerQuestion(@PathVariable Long quizId, Model model,
+                                @ModelAttribute("message") String message) {
+        Quiz quiz = quizService.getQuizById(quizId);
+        model.addAttribute("quiz", quiz);
+        model.addAttribute("message", message);
+        return "creer-quiz";
+    }
+
+    // ✅ Enregistre une nouvelle question avec ses réponses
     @PostMapping("/quiz/{id}/valider-question")
     public String enregistrerQuestion(
             @PathVariable Long id,
-            @ModelAttribute QuestionFormDto formDto
+            @RequestParam String question,
+            @RequestParam List<String> choix,
+            @RequestParam(required = false) List<Integer> corrects,
+            RedirectAttributes redirectAttributes
     ) {
         Quiz quiz = quizService.getQuizById(id);
-
-        // Créer la question
-        Question question = quizService.ajouterQuestion(formDto.getQuestion(), quiz);
-
-        // Ajouter les réponses avec prise en charge de plusieurs bonnes
-        List<String> choix = formDto.getChoix();
-        List<Integer> corrects = formDto.getCorrects(); // index 1-based
+        Question q = quizService.ajouterQuestion(question, quiz);
 
         for (int i = 0; i < choix.size(); i++) {
             boolean correcte = corrects != null && corrects.contains(i + 1);
-            quizService.ajouterReponse(choix.get(i), correcte, question);
+            quizService.ajouterReponse(choix.get(i), correcte, q);
         }
 
-        return "redirect:/enseignant/quiz/" + quiz.getId() + "/creer-question";
+        redirectAttributes.addFlashAttribute("message", "✅ Question enregistrée avec succès !");
+        return "redirect:/enseignant/quiz/" + id + "/creer-question";
+    }
+
+    // ✅ Supprime un quiz existant
+    @PostMapping("/quiz/{id}/supprimer")
+    public String supprimerQuiz(@PathVariable Long id) {
+        quizService.supprimerQuiz(id);
+        return "redirect:/enseignant/mes-cours";
     }
 }

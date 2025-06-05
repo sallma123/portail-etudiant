@@ -46,9 +46,16 @@
 <body>
 
 <div class="card">
-    <h3 class="text-center mb-4">Créer un Quiz <span th:text="${quiz.titre}"></span></h3>
+    <h3 class="text-center mb-3">
+        Créer un Quiz :
+        <span th:text="${quiz != null ? quiz.titre : 'Quiz inconnu'}">[Titre Quiz]</span>
+    </h3>
 
-    <form th:action="@{/enseignant/quiz/{id}/valider-question(id=${quiz.id})}" method="post">
+    <!-- ✅ Message de confirmation -->
+    <div th:if="${message}" class="alert alert-success text-center" th:text="${message}">Question enregistrée avec succès !</div>
+
+    <form th:if="${quiz != null}"
+          th:action="@{/enseignant/quiz/{id}/valider-question(id=${quiz.id})}" method="post">
 
         <!-- Champ de la question -->
         <div class="mb-3">
@@ -73,11 +80,17 @@
             <button type="button" class="btn btn-outline-secondary" onclick="supprimerChoix()">Supprimer le dernier</button>
         </div>
 
-        <!-- Valider -->
-        <div class="text-center">
-            <button class="btn btn-purple px-5 mt-3" type="submit">✅ Valider</button>
+        <!-- Boutons d'action -->
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-purple" type="submit">➕ Ajouter la question</button>
+            <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">✅ Terminer</a>
         </div>
     </form>
+
+    <!-- Si aucun quiz fourni -->
+    <div th:if="${quiz == null}" class="alert alert-danger text-center mt-3">
+        ⚠️ Quiz introuvable. Veuillez réessayer depuis la page des cours.
+    </div>
 </div>
 
 <script>

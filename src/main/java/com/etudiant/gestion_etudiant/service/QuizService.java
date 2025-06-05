@@ -5,8 +5,13 @@ import com.etudiant.gestion_etudiant.entity.Question;
 import com.etudiant.gestion_etudiant.entity.Quiz;
 import com.etudiant.gestion_etudiant.entity.Reponse;
 import com.etudiant.gestion_etudiant.repository.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class QuizService {
@@ -45,4 +50,33 @@ public class QuizService {
     public Question getQuestionById(Long id) {
         return questionRepository.findById(id).orElseThrow();
     }
+
+    // ✅ Récupérer un quiz par cours
+    public Optional<Quiz> getQuizByCours(Cours cours) {
+        return quizRepository.findByCours(cours);
+    }
+
+    @Transactional
+    public void supprimerQuiz(Long quizId) {
+        Quiz quiz = getQuizById(quizId);
+        Cours cours = quiz.getCours();
+
+        // Dissocier le quiz du cours
+        if (cours != null) {
+            cours.setQuiz(null);
+        }
+
+        // Supprimer les réponses
+        List<Question> questions = questionRepository.findByQuizId(quizId);
+        for (Question q : questions) {
+            reponseRepository.deleteByQuestionId(q.getId());
+        }
+
+        // Supprimer les questions
+        questionRepository.deleteByQuizId(quizId);
+
+        // Supprimer le quiz
+        quizRepository.deleteById(quizId);
+    }
+
 }

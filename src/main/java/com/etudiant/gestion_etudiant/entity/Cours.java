@@ -10,6 +10,7 @@ public class Cours {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String titre;
     private String description;
     private String categorie;
@@ -21,9 +22,13 @@ public class Cours {
 
     @OneToMany(mappedBy = "cours", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Support> supports;
-    // Constructors
-    public Cours() {
-    }
+
+    // ✅ Ajout relation OneToOne avec Quiz
+    @OneToOne(mappedBy = "cours", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Quiz quiz;
+
+    // Constructeurs
+    public Cours() {}
 
     public Cours(String titre, String description, String categorie, LocalDate dateCreation, User enseignant) {
         this.titre = titre;
@@ -33,7 +38,7 @@ public class Cours {
         this.enseignant = enseignant;
     }
 
-    // Getters and Setters
+    // Getters et Setters
     public Long getId() {
         return id;
     }
@@ -76,5 +81,21 @@ public class Cours {
 
     public void setEnseignant(User enseignant) {
         this.enseignant = enseignant;
+    }
+
+    public List<Support> getSupports() {
+        return supports;
+    }
+
+    public void setSupports(List<Support> supports) {
+        this.supports = supports;
+    }
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
     }
 }

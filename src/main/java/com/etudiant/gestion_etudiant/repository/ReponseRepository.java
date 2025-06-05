@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ReponseRepository extends JpaRepository<Reponse, Long> {
     List<Reponse> findByQuestion(Question question);
+    void deleteByQuestionId(Long questionId);
+
 }

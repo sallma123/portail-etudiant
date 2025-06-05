@@ -56,13 +56,30 @@
             <td th:text="${cours.categorie}"></td>
             <td th:text="${cours.dateCreation}"></td>
             <td class="d-flex flex-wrap gap-1 justify-content-center">
+
+                <!-- 📁 Gérer supports -->
                 <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
                    class="btn btn-sm btn-outline-primary">📁 Gérer supports</a>
-                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-quiz'}"
-                   class="btn btn-sm btn-outline-success">📝 Gérer quiz</a>
+
+                <!-- 📝 Gérer quiz ou supprimer quiz -->
+                <div th:if="${cours.quiz == null}">
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-quiz'}"
+                       class="btn btn-sm btn-outline-success">📝 Créer quiz</a>
+                </div>
+                <div th:if="${cours.quiz != null}">
+                    <div th:if="${cours.quiz != null}">
+                        <form th:action="@{'/enseignant/quiz/' + ${cours.quiz.id} + '/supprimer'}" method="post"
+                              onsubmit="return confirm('❌ Voulez-vous vraiment supprimer ce quiz ?');">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">🗑 Supprimer quiz</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 🗑 Supprimer cours -->
                 <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}"
                    class="btn btn-sm btn-outline-danger"
                    onclick="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce cours ?');">🗑 Supprimer</a>
+
             </td>
         </tr>
         </tbody>
