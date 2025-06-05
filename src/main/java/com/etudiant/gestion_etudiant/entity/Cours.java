@@ -2,6 +2,7 @@ package com.etudiant.gestion_etudiant.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class Cours {
@@ -9,7 +10,6 @@ public class Cours {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String titre;
     private String description;
     private String categorie;
@@ -19,6 +19,8 @@ public class Cours {
     @JoinColumn(name = "enseignant_id")
     private User enseignant;
 
+    @OneToMany(mappedBy = "cours", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Support> supports;
     // Constructors
     public Cours() {
     }

@@ -42,7 +42,9 @@
                     </div>
                     <div class="mt-2">
                         <a th:href="${s.lien}" class="btn btn-sm btn-outline-primary me-1" target="_blank">🌐 Voir</a>
-                        <a th:href="${s.lien}" th:download class="btn btn-sm btn-success">⬇ Télécharger</a>
+                        <a th:href="@{'/enseignant/support/' + ${s.id} + '/supprimer'}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Supprimer ce support ?');">🗑 Supprimer</a>
                     </div>
                 </div>
             </div>

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SupportService {
@@ -30,4 +31,8 @@ public class SupportService {
     public List<Support> getSupportsParCours(Cours cours) {
         return supportRepository.findByCours(cours);
     }
+    public Optional<Support> getSupportParId(Long id) {
+        return supportRepository.findById(id);
+    }
+
 }

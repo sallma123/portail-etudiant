@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,10 +47,10 @@ public class CoursController {
         return coursService.modifierCours(id, coursModifie);
     }
 
-    // ✅ Supprimer un cours
+    // ✅ Supprimer un cours (et ses supports associés)
     @DeleteMapping("/{id}")
     public void supprimerCours(@PathVariable Long id) {
-        coursService.supprimerCours(id);
+        coursService.supprimerCoursEtSupports(id);
     }
 
     // ✅ Ajouter un support à un cours
@@ -66,7 +65,7 @@ public class CoursController {
     }
 
     // ✅ Lister les supports d’un cours
-    @GetMapping("/{id}/supports-api") // ou /supports/json
+    @GetMapping("/{id}/supports-api")
     public List<Support> getSupports(@PathVariable Long id) {
         Optional<Cours> coursOpt = coursService.getCoursParId(id);
         if (coursOpt.isPresent()) {

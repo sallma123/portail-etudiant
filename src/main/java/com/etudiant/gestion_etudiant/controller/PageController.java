@@ -157,4 +157,28 @@ public class PageController {
             return "liste-supports";
         }).orElse("redirect:/enseignant/mes-cours");
     }
+    @GetMapping("/enseignant/support/{id}/supprimer")
+    public String supprimerSupport(@PathVariable Long id) {
+        Optional<Support> supportOpt = supportService.getSupportParId(id);
+        if (supportOpt.isPresent()) {
+            // Supprimer le fichier physique
+            String lien = supportOpt.get().getLien(); // ex: /fichiers/123_nom.pdf
+            String nomFichier = lien.substring(lien.lastIndexOf("/") + 1);
+            File fichier = new File(System.getProperty("user.dir") + "/uploads/" + nomFichier);
+            if (fichier.exists()) {
+                fichier.delete();
+            }
+
+            // Supprimer en base
+            supportService.supprimerSupport(id);
+        }
+        return "redirect:/enseignant/mes-cours";
+    }
+    @GetMapping("/enseignant/cours/{id}/supprimer")
+    public String supprimerCours(@PathVariable Long id) {
+        coursService.supprimerCoursEtSupports(id);
+        return "redirect:/enseignant/mes-cours";
+    }
+
 }
+
