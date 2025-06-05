@@ -14,7 +14,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,80 +41,63 @@ public class PageController {
         this.supportService = supportService;
     }
 
-    // ✅ Page de login
+    // 🔐 Page de login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
                             Model model) {
-
         if (error != null) {
             model.addAttribute("error", error.equals("unauthorized")
-                    ? "Accès non autorisé."
-                    : "Identifiants invalides !");
+                    ? "Accès non autorisé." : "Identifiants invalides !");
         }
-
         if (resetSuccess != null) {
             model.addAttribute("message", "Votre mot de passe a été réinitialisé avec succès.");
         }
-
         return "login";
     }
 
-    // ✅ Tableau de bord ADMIN
+    // 🎓 Dashboards
+    @GetMapping("/enseignant/dashboard")
+    public String enseignantDashboard(Authentication auth) {
+        return hasRole(auth, "ROLE_ENSEIGNANT") ? "enseignant" : "redirect:/login?error=unauthorized";
+    }
+
+    @GetMapping("/etudiant/dashboard")
+    public String etudiantDashboard(Authentication auth) {
+        return hasRole(auth, "ROLE_ETUDIANT") ? "etudiant" : "redirect:/login?error=unauthorized";
+    }
+
     @GetMapping("/admin/dashboard")
     public String adminDashboard(Authentication auth, Model model) {
-        if (auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-
-            long nbEtudiants = userRepo.countByRole_Name("ROLE_ETUDIANT");
-            long nbEnseignants = userRepo.countByRole_Name("ROLE_ENSEIGNANT");
-
-            model.addAttribute("nbEtudiants", nbEtudiants);
-            model.addAttribute("nbEnseignants", nbEnseignants);
-
+        if (hasRole(auth, "ROLE_ADMIN")) {
+            model.addAttribute("nbEtudiants", userRepo.countByRole_Name("ROLE_ETUDIANT"));
+            model.addAttribute("nbEnseignants", userRepo.countByRole_Name("ROLE_ENSEIGNANT"));
             return "admin-dashboard";
         }
         return "redirect:/login?error=unauthorized";
     }
 
-    // ✅ Tableau de bord ÉTUDIANT
-    @GetMapping("/etudiant/dashboard")
-    public String etudiantDashboard(Authentication auth) {
-        if (auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ETUDIANT"))) {
-            return "etudiant";
-        }
-        return "redirect:/login?error=unauthorized";
+    private boolean hasRole(Authentication auth, String role) {
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(role));
     }
 
-    // ✅ Tableau de bord ENSEIGNANT
-    @GetMapping("/enseignant/dashboard")
-    public String enseignantDashboard(Authentication auth) {
-        if (auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ENSEIGNANT"))) {
-            return "enseignant";
-        }
-        return "redirect:/login?error=unauthorized";
-    }
-
-    // ✅ Liste des cours de l'enseignant connecté
+    // 📚 Liste des cours
     @GetMapping("/enseignant/mes-cours")
     public String afficherMesCours(Model model,
                                    @AuthenticationPrincipal(expression = "username") String email) {
         User enseignant = userService.findByEmail(email);
-        List<Cours> coursList = coursService.getCoursParEnseignant(enseignant);
-        model.addAttribute("coursList", coursList);
+        model.addAttribute("coursList", coursService.getCoursParEnseignant(enseignant));
         return "mes-cours";
     }
 
-    // ✅ Formulaire de création d’un cours
+    // ➕ Ajouter un cours
     @GetMapping("/enseignant/ajouter-cours")
     public String afficherFormulaireCours(Model model) {
         model.addAttribute("cours", new Cours());
         return "ajouter-cours";
     }
 
-    // ✅ Traitement d’enregistrement du cours
     @PostMapping("/enseignant/ajouter-cours")
     public String enregistrerCours(@ModelAttribute("cours") Cours cours,
                                    @AuthenticationPrincipal(expression = "username") String email) {
@@ -121,37 +106,55 @@ public class PageController {
         return "redirect:/enseignant/mes-cours";
     }
 
-    // ✅ Formulaire pour ajouter un support à un cours
+    // ➕ Ajouter un support
     @GetMapping("/enseignant/cours/{id}/ajouter-support")
     public String afficherFormulaireSupport(@PathVariable Long id, Model model) {
-        Optional<Cours> coursOpt = coursService.getCoursParId(id);
-        if (coursOpt.isPresent()) {
-            model.addAttribute("cours", coursOpt.get());
-            model.addAttribute("support", new Support());
+        return coursService.getCoursParId(id).map(cours -> {
+            model.addAttribute("cours", cours);
             return "ajouter-support";
-        } else {
-            return "redirect:/enseignant/mes-cours";
-        }
+        }).orElse("redirect:/enseignant/mes-cours");
     }
 
-    // ✅ Traitement d’enregistrement du support
-    @PostMapping("/enseignant/cours/{id}/ajouter-support")
-    public String enregistrerSupport(@PathVariable Long id,
-                                     @ModelAttribute("support") Support support) {
-        Optional<Cours> coursOpt = coursService.getCoursParId(id);
-        coursOpt.ifPresent(cours -> supportService.ajouterSupport(support, cours));
+    // 📁 Upload réel d’un support
+    @PostMapping("/enseignant/cours/{id}/upload-support")
+    public String uploadSupport(@PathVariable Long id,
+                                @RequestParam("nomFichier") String nomFichier,
+                                @RequestParam("type") String type,
+                                @RequestParam("file") MultipartFile file) {
+        try {
+            Optional<Cours> coursOpt = coursService.getCoursParId(id);
+            if (coursOpt.isEmpty()) return "redirect:/enseignant/mes-cours";
+
+            // ✅ Utilise le chemin absolu correct
+            String uploadPath = System.getProperty("user.dir") + File.separator + "uploads";
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) uploadDir.mkdirs();
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename().replaceAll("\\s+", "_");
+            File dest = new File(uploadDir, fileName);
+            file.transferTo(dest);
+
+            Support support = new Support();
+            support.setNomFichier(nomFichier);
+            support.setType(type);
+            support.setLien("/fichiers/" + fileName); // utilisé par StaticResourceConfig
+            supportService.ajouterSupport(support, coursOpt.get());
+
+            System.out.println("✅ Support uploadé : " + fileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return "redirect:/enseignant/mes-cours";
     }
+
+    // 📄 Voir tous les supports d’un cours
     @GetMapping("/enseignant/cours/{id}/supports")
     public String afficherListeSupports(@PathVariable Long id, Model model) {
-        Optional<Cours> coursOpt = coursService.getCoursParId(id);
-        if (coursOpt.isPresent()) {
-            Cours cours = coursOpt.get();
+        return coursService.getCoursParId(id).map(cours -> {
             model.addAttribute("cours", cours);
             model.addAttribute("supports", supportService.getSupportsParCours(cours));
             return "liste-supports";
-        }
-        return "redirect:/enseignant/mes-cours";
+        }).orElse("redirect:/enseignant/mes-cours");
     }
-
 }

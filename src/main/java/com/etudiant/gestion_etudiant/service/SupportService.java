@@ -17,6 +17,7 @@ public class SupportService {
     // Ajouter un support à un cours
     public Support ajouterSupport(Support support, Cours cours) {
         support.setCours(cours);
+        System.out.println("📥 Support enregistré pour le cours : " + cours.getTitre());
         return supportRepository.save(support);
     }
 
