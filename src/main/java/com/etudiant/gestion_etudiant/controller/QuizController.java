@@ -66,6 +66,11 @@ public class QuizController {
             @RequestParam(required = false) String redirect,
             RedirectAttributes redirectAttributes
     ) {
+        if (corrects == null || corrects.isEmpty()) {
+            redirectAttributes.addAttribute("message", "❌ Veuillez sélectionner au moins une bonne réponse.");
+            return "redirect:/enseignant/cours/" + id + "/creer-quiz";
+        }
+
         Quiz quiz = quizService.getQuizById(id);
         quiz.setTitre(titre);
         quiz.setSeuil(seuil);
@@ -73,7 +78,7 @@ public class QuizController {
 
         Question q = quizService.ajouterQuestion(question, quiz);
         for (int i = 0; i < choix.size(); i++) {
-            boolean correcte = corrects != null && corrects.contains(i + 1);
+            boolean correcte = corrects.contains(i + 1);
             quizService.ajouterReponse(choix.get(i), correcte, q);
         }
 

@@ -31,10 +31,8 @@
     <!-- ✅ Message de confirmation -->
     <div th:if="${message}" class="alert alert-success text-center" th:text="${message}">Question enregistrée !</div>
 
-    <!-- 🎯 Création du quiz (titre/seuil) -->
-    <form th:if="${quiz == null}"
-          th:action="@{'/enseignant/cours/' + ${cours.id} + '/enregistrer-quiz'}"
-          method="post">
+    <!-- 🎯 Création du quiz -->
+    <form th:if="${quiz == null}" th:action="@{'/enseignant/cours/' + ${cours.id} + '/enregistrer-quiz'}" method="post">
         <div class="row mb-3">
             <div class="col-md-8">
                 <label>Titre du quiz</label>
@@ -45,15 +43,13 @@
                 <input type="number" name="seuil" class="form-control" placeholder="Ex: 60%" min="0" max="100" required />
             </div>
         </div>
-
         <div class="text-end">
             <button type="submit" class="btn btn-primary">✅ Enregistrer</button>
         </div>
     </form>
 
     <!-- 🎯 Ajout de questions -->
-    <form th:if="${quiz != null}" method="post">
-
+    <form th:if="${quiz != null}" method="post" onsubmit="return verifierReponseCochee();">
         <!-- Titre et seuil -->
         <div class="row mb-3">
             <div class="col-md-8">
@@ -92,16 +88,12 @@
 
         <!-- Boutons -->
         <div class="d-flex justify-content-between">
-            <!-- Ajouter question (reste sur la page) -->
             <button type="submit" class="btn btn-outline-success"
-                    formaction="#"
                     th:formaction="@{'/enseignant/quiz/' + ${quiz.id} + '/ajouter-question'}">
                 ➕ Ajouter question
             </button>
 
-            <!-- Enregistrer et retourner -->
             <button type="submit" class="btn btn-outline-secondary"
-                    formaction="#"
                     th:formaction="@{'/enseignant/quiz/' + ${quiz.id} + '/ajouter-question?redirect=mes-cours'}">
                 ✅ Enregistrer
             </button>
@@ -130,6 +122,15 @@
             container.removeChild(container.lastElementChild);
             index--;
         }
+    }
+
+    function verifierReponseCochee() {
+        const checkboxes = document.querySelectorAll("input[name='corrects']:checked");
+        if (checkboxes.length === 0) {
+            alert("Veuillez cocher au moins une bonne réponse.");
+            return false;
+        }
+        return true;
     }
 </script>
 
