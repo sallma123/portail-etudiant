@@ -78,5 +78,8 @@ public class QuizService {
         // Supprimer le quiz
         quizRepository.deleteById(quizId);
     }
+    public void enregistrer(Quiz quiz) {
+        quizRepository.save(quiz);
+    }
 
 }

@@ -63,7 +63,7 @@
 
                 <!-- 📝 Gérer quiz ou supprimer quiz -->
                 <div th:if="${cours.quiz == null}">
-                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-quiz'}"
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/creer-quiz'}"
                        class="btn btn-sm btn-outline-success">📝 Créer quiz</a>
                 </div>
                 <div th:if="${cours.quiz != null}">

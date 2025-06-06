@@ -7,12 +7,11 @@
     <style>
         body {
             background: linear-gradient(to right, #667eea, #764ba2);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
+            padding-top: 2rem;
             font-family: 'Segoe UI', sans-serif;
-            padding-top: 3rem;
         }
         .card {
             background: white;
@@ -20,77 +19,94 @@
             border-radius: 1rem;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
             width: 100%;
-            max-width: 700px;
-        }
-        .btn-purple {
-            background-color: #764ba2;
-            color: white;
-            border: none;
-        }
-        .btn-purple:hover {
-            background-color: #5e3b89;
-        }
-        .checkbox-large {
-            transform: scale(1.5);
-            margin-left: 1rem;
-        }
-        input[type="text"] {
-            background-color: #f8f9fa;
-            border-radius: 0.5rem;
-            border: 1px solid #ced4da;
-            padding: 0.75rem;
-            width: 100%;
+            max-width: 800px;
         }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h3 class="text-center mb-3">
-        Créer un Quiz :
-        <span th:text="${quiz != null ? quiz.titre : 'Quiz inconnu'}">[Titre Quiz]</span>
-    </h3>
+    <h3 class="text-center mb-4">📝 Créer un quiz</h3>
 
     <!-- ✅ Message de confirmation -->
-    <div th:if="${message}" class="alert alert-success text-center" th:text="${message}">Question enregistrée avec succès !</div>
+    <div th:if="${message}" class="alert alert-success text-center" th:text="${message}">Question enregistrée !</div>
 
-    <form th:if="${quiz != null}"
-          th:action="@{/enseignant/quiz/{id}/valider-question(id=${quiz.id})}" method="post">
+    <!-- 🎯 Création du quiz (titre/seuil) -->
+    <form th:if="${quiz == null}"
+          th:action="@{'/enseignant/cours/' + ${cours.id} + '/enregistrer-quiz'}"
+          method="post">
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label>Titre du quiz</label>
+                <input type="text" name="titre" class="form-control" placeholder="Ex: Quiz POO" required />
+            </div>
+            <div class="col-md-4">
+                <label>Seuil (%)</label>
+                <input type="number" name="seuil" class="form-control" placeholder="Ex: 60%" min="0" max="100" required />
+            </div>
+        </div>
 
-        <!-- Champ de la question -->
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">✅ Enregistrer</button>
+        </div>
+    </form>
+
+    <!-- 🎯 Ajout de questions -->
+    <form th:if="${quiz != null}" method="post">
+
+        <!-- Titre et seuil -->
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <label>Titre du quiz</label>
+                <input type="text" name="titre" class="form-control" th:value="${quiz.titre}" required />
+            </div>
+            <div class="col-md-4">
+                <label>Seuil (%)</label>
+                <input type="number" name="seuil" class="form-control" th:value="${quiz.seuil}" min="0" max="100" required />
+            </div>
+        </div>
+
+        <!-- Question -->
         <div class="mb-3">
-            <input type="text" name="question" placeholder="Écrivez votre question ici" required class="form-control"/>
+            <label>Question</label>
+            <input type="text" name="question" class="form-control" placeholder="Votre question" required />
         </div>
 
         <!-- Choix -->
         <div id="choix-container">
             <div class="d-flex align-items-center mb-2">
-                <input type="text" name="choix" placeholder="Choix 1" class="form-control me-3" required />
-                <input type="checkbox" name="corrects" value="1" class="checkbox-large" />
+                <input type="text" name="choix" class="form-control me-3" placeholder="Choix 1" required />
+                <input type="checkbox" name="corrects" value="1" />
             </div>
             <div class="d-flex align-items-center mb-2">
-                <input type="text" name="choix" placeholder="Choix 2" class="form-control me-3" required />
-                <input type="checkbox" name="corrects" value="2" class="checkbox-large" />
+                <input type="text" name="choix" class="form-control me-3" placeholder="Choix 2" required />
+                <input type="checkbox" name="corrects" value="2" />
             </div>
         </div>
 
-        <!-- Ajouter/Supprimer -->
+        <!-- Ajouter/Supprimer choix -->
         <div class="d-flex justify-content-between my-3">
-            <button type="button" class="btn btn-info" onclick="ajouterChoix()">+ Ajouter un choix</button>
-            <button type="button" class="btn btn-outline-secondary" onclick="supprimerChoix()">Supprimer le dernier</button>
+            <button type="button" class="btn btn-outline-primary" onclick="ajouterChoix()">+ Ajouter un choix</button>
+            <button type="button" class="btn btn-outline-danger" onclick="supprimerChoix()">Supprimer le dernier</button>
         </div>
 
-        <!-- Boutons d'action -->
+        <!-- Boutons -->
         <div class="d-flex justify-content-between">
-            <button class="btn btn-purple" type="submit">➕ Ajouter la question</button>
-            <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">✅ Terminer</a>
+            <!-- Ajouter question (reste sur la page) -->
+            <button type="submit" class="btn btn-outline-success"
+                    formaction="#"
+                    th:formaction="@{'/enseignant/quiz/' + ${quiz.id} + '/ajouter-question'}">
+                ➕ Ajouter question
+            </button>
+
+            <!-- Enregistrer et retourner -->
+            <button type="submit" class="btn btn-outline-secondary"
+                    formaction="#"
+                    th:formaction="@{'/enseignant/quiz/' + ${quiz.id} + '/ajouter-question?redirect=mes-cours'}">
+                ✅ Enregistrer
+            </button>
         </div>
     </form>
-
-    <!-- Si aucun quiz fourni -->
-    <div th:if="${quiz == null}" class="alert alert-danger text-center mt-3">
-        ⚠️ Quiz introuvable. Veuillez réessayer depuis la page des cours.
-    </div>
 </div>
 
 <script>
@@ -98,18 +114,18 @@
 
     function ajouterChoix() {
         index++;
-        const container = document.getElementById('choix-container');
-        const div = document.createElement('div');
-        div.classList.add('d-flex', 'align-items-center', 'mb-2');
+        const container = document.getElementById("choix-container");
+        const div = document.createElement("div");
+        div.className = "d-flex align-items-center mb-2";
         div.innerHTML = `
-            <input type="text" name="choix" placeholder="Choix ${index}" class="form-control me-3" required />
-            <input type="checkbox" name="corrects" value="${index}" class="checkbox-large" />
+            <input type="text" name="choix" class="form-control me-3" placeholder="Choix ${index}" required />
+            <input type="checkbox" name="corrects" value="${index}" />
         `;
         container.appendChild(div);
     }
 
     function supprimerChoix() {
-        const container = document.getElementById('choix-container');
+        const container = document.getElementById("choix-container");
         if (container.children.length > 2) {
             container.removeChild(container.lastElementChild);
             index--;
