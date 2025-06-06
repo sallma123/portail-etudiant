@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +51,7 @@ public class ResultatService {
         return note;
     }
 
-    public Resultat getResultat(User etudiant, Quiz quiz) {
-        return resultatRepository.findByEtudiantAndQuiz(etudiant, quiz).orElse(null);
+    public Optional<Resultat> getByEtudiantAndQuiz(User etudiant, Quiz quiz) {
+        return resultatRepository.findTopByEtudiantAndQuizOrderByDateDesc(etudiant, quiz);
     }
 }

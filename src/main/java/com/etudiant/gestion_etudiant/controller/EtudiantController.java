@@ -1,9 +1,8 @@
 package com.etudiant.gestion_etudiant.controller;
 
 import com.etudiant.gestion_etudiant.entity.*;
-import com.etudiant.gestion_etudiant.service.*;
 import com.etudiant.gestion_etudiant.repository.*;
-
+import com.etudiant.gestion_etudiant.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,9 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -26,8 +23,9 @@ public class EtudiantController {
     @Autowired private SupportRepository supportRepository;
     @Autowired private SupportVuService supportVuService;
     @Autowired private InscriptionRepository inscriptionRepository;
+    @Autowired private QuizService quizService;
+    @Autowired private ResultatService resultatService;
 
-    // 🔹 Affiche les cours disponibles ET les cours inscrits (fusionnés dans une page)
     @GetMapping("/cours-disponibles")
     public String coursDisponibles(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -44,11 +42,10 @@ public class EtudiantController {
                 .toList();
 
         model.addAttribute("coursDisponibles", coursNonInscrits);
-        model.addAttribute("inscriptions", inscriptions); // Ajouté
-        return "cours-disponibles"; // la page fusionnée
+        model.addAttribute("inscriptions", inscriptions);
+        return "cours-disponibles";
     }
 
-    // 🔹 Action : s'inscrire à un cours
     @GetMapping("/s-inscrire/{coursId}")
     public String inscrire(@PathVariable Long coursId, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -57,9 +54,6 @@ public class EtudiantController {
         return "redirect:/etudiant/cours-disponibles";
     }
 
-    // ❌ SUPPRIMÉ : /mes-cours – car fusionné dans /cours-disponibles
-
-    // 🔹 Affiche les supports d’un cours
     @GetMapping("/cours/{id}/supports")
     public String voirSupports(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -72,19 +66,40 @@ public class EtudiantController {
         List<Support> supports = supportRepository.findByCours(cours);
         Map<Long, Boolean> vus = new HashMap<>();
 
+        boolean supportsNonVus = false;
         for (Support s : supports) {
             boolean vu = supportVuService.estSupportVu(etudiant, s);
             vus.put(s.getId(), vu);
+            if (!vu) {
+                supportsNonVus = true;
+            }
         }
 
         model.addAttribute("supports", supports);
         model.addAttribute("cours", cours);
         model.addAttribute("supportsVus", vus);
+        model.addAttribute("supportsNonVus", supportsNonVus);
+
+        Optional<Quiz> quizOpt = quizService.getQuizByCours(cours);
+        if (quizOpt.isPresent()) {
+            Quiz quiz = quizOpt.get();
+            model.addAttribute("quizExiste", true);
+            model.addAttribute("quiz", quiz);
+
+            Optional<Resultat> resultatOpt = resultatService.getByEtudiantAndQuiz(etudiant, quiz);
+            boolean certificatDisponible = resultatOpt.isPresent() && resultatOpt.get().getNote() >= quiz.getSeuil();
+            model.addAttribute("certificatDisponible", certificatDisponible);
+            System.out.println("Certificat disponible ? " + certificatDisponible);
+        } else {
+            model.addAttribute("quizExiste", false);
+            System.out.println("Aucun quiz pour ce cours");
+        }
+
+        System.out.println("Tous les supports vus ? " + !supportsNonVus);
+
         return "support-etudiant";
     }
 
-
-    // 🔹 Affiche un support ET le marque comme vu
     @GetMapping("/support/{id}/voir")
     public String voirSupport(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
