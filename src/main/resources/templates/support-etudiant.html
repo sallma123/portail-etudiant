@@ -52,7 +52,7 @@
                 <div class="btn-group">
                     <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}"
                        th:classappend="${supportsVus[support.id]} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'">
-                        <span th:text="${supportsVus[support.id]} ? '✔ Terminé' : '↪ Marquer comme vu'">✔ Terminé</span>
+                        <span th:text="${supportsVus[support.id]} ? '✔ Terminé' : '↪ Marquer comme vu'"></span>
                     </a>
                     <a th:href="${support.lien}" target="_blank" class="btn btn-purple btn-sm">📄 Ouvrir</a>
                 </div>
@@ -60,16 +60,19 @@
         </div>
     </div>
 
-    <!-- ✅ Section quiz : uniquement si supports terminés et quiz existe -->
-    <div class="text-center" th:if="${not supportsNonVus} and ${quizExiste}">
+    <!-- ✅ Section quiz : uniquement si tous les supports sont vus ET un quiz existe -->
+    <div class="text-center" th:if="${!supportsNonVus} and ${quizExiste}">
         <h5>🎓 Vous avez terminé tous les supports.</h5>
 
         <div class="mt-3">
+            <!-- ✅ Voir certificat -->
             <a th:if="${certificatDisponible}"
-               th:href="@{'/certificats/' + ${quiz.id} + '.pdf'}"
+               th:href="@{'/fichiers/' + ${nomFichier}}"
                class="btn btn-success">
                 📄 Voir le certificat
             </a>
+
+            <!-- ✅ Passer quiz -->
             <a th:if="${!certificatDisponible}"
                th:href="@{'/etudiant/quiz/' + ${quiz.id}}"
                class="btn btn-warning">

@@ -20,6 +20,7 @@
             max-width: 500px;
             width: 100%;
             text-align: center;
+            background-color: white;
         }
         .btn-primary {
             background-color: #764ba2;
@@ -27,6 +28,10 @@
         }
         .btn-primary:hover {
             background-color: #5e3b89;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border: none;
         }
         .note {
             font-size: 1.5rem;
@@ -51,6 +56,11 @@
     <div th:if="${note < quiz.seuil}">
         <p class="text-danger">❌ Vous n'avez pas atteint le seuil de réussite.</p>
     </div>
+
+    <!-- ✅ Bouton retour -->
+    <a th:href="@{'/etudiant/cours/' + ${cours.id} + '/supports'}" class="btn btn-secondary mt-4">
+        ⬅ Retour aux supports du cours
+    </a>
 </div>
 
 </body>

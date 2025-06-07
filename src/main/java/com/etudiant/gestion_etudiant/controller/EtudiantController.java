@@ -65,14 +65,12 @@ public class EtudiantController {
 
         List<Support> supports = supportRepository.findByCours(cours);
         Map<Long, Boolean> vus = new HashMap<>();
-
         boolean supportsNonVus = false;
+
         for (Support s : supports) {
             boolean vu = supportVuService.estSupportVu(etudiant, s);
             vus.put(s.getId(), vu);
-            if (!vu) {
-                supportsNonVus = true;
-            }
+            if (!vu) supportsNonVus = true;
         }
 
         model.addAttribute("supports", supports);
@@ -87,15 +85,24 @@ public class EtudiantController {
             model.addAttribute("quiz", quiz);
 
             Optional<Resultat> resultatOpt = resultatService.getByEtudiantAndQuiz(etudiant, quiz);
-            boolean certificatDisponible = resultatOpt.isPresent() && resultatOpt.get().getNote() >= quiz.getSeuil();
+            boolean certificatDisponible = false;
+
+            if (resultatOpt.isPresent()) {
+                double note = resultatOpt.get().getNote();
+                certificatDisponible = note >= quiz.getSeuil();
+
+                if (certificatDisponible) {
+                    String nomFichier = etudiant.getPrenom().replaceAll(" ", "_") + "_" +
+                            etudiant.getNom().replaceAll(" ", "_") + "_" +
+                            cours.getTitre().replaceAll(" ", "_") + ".pdf";
+                    model.addAttribute("nomFichier", nomFichier);
+                }
+            }
+
             model.addAttribute("certificatDisponible", certificatDisponible);
-            System.out.println("Certificat disponible ? " + certificatDisponible);
         } else {
             model.addAttribute("quizExiste", false);
-            System.out.println("Aucun quiz pour ce cours");
         }
-
-        System.out.println("Tous les supports vus ? " + !supportsNonVus);
 
         return "support-etudiant";
     }

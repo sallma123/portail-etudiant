@@ -26,7 +26,7 @@ public class QuizController {
     @Autowired private CertificatGeneratorService certificatGeneratorService;
     @Autowired private ReponseRepository reponseRepository;
 
-    // ✅ Partie Enseignant : Création quiz
+    // ✅ Partie Enseignant
 
     @GetMapping("/enseignant/cours/{id}/creer-quiz")
     public String afficherFormulaireQuiz(@PathVariable Long id, Model model,
@@ -51,7 +51,7 @@ public class QuizController {
             return "redirect:/enseignant/mes-cours";
         }
 
-        Quiz quiz = quizService.ajouterQuiz(titre, seuil, cours);
+        quizService.ajouterQuiz(titre, seuil, cours);
         return "redirect:/enseignant/cours/" + id + "/creer-quiz";
     }
 
@@ -106,10 +106,10 @@ public class QuizController {
         return "redirect:/enseignant/mes-cours";
     }
 
-    // ✅ Partie Étudiant : Passer un quiz
+    // ✅ Partie Étudiant
 
     @GetMapping("/etudiant/quiz/{id}")
-    public String afficherQuizPourEtudiant(@PathVariable Long id, Model model) {
+    public String afficherQuizPourEtudiant(@PathVariable Long id, Model model, Principal principal) {
         Quiz quiz = quizRepository.findById(id).orElseThrow();
         model.addAttribute("quiz", quiz);
         return "quiz-qcm";
@@ -134,16 +134,17 @@ public class QuizController {
 
         double note = resultatService.corrigerEtEnregistrer(etudiant, id, reponsesEtudiant);
         Quiz quiz = quizRepository.findById(id).orElseThrow();
+        Cours cours = quiz.getCours();
 
         String nomFichier = null;
         if (note >= quiz.getSeuil()) {
             nomFichier = etudiant.getPrenom().replaceAll(" ", "_") + "_" +
                     etudiant.getNom().replaceAll(" ", "_") + "_" +
-                    quiz.getCours().getTitre().replaceAll(" ", "_") + ".pdf";
+                    cours.getTitre().replaceAll(" ", "_") + ".pdf";
 
             certificatGeneratorService.generatePdf(
                     etudiant.getPrenom() + " " + etudiant.getNom(),
-                    quiz.getCours().getTitre(),
+                    cours.getTitre(),
                     note,
                     LocalDate.now()
             );
@@ -151,8 +152,8 @@ public class QuizController {
 
         model.addAttribute("quiz", quiz);
         model.addAttribute("note", note);
-        model.addAttribute("nomFichier", nomFichier); // pour lien /fichiers/...
+        model.addAttribute("nomFichier", nomFichier);
+        model.addAttribute("cours", cours); // pour retour vers les supports
         return "resultat-quiz";
     }
-
 }
