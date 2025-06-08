@@ -116,4 +116,5 @@ public class EtudiantController {
         Long coursId = support.getCours().getId();
         return "redirect:/etudiant/cours/" + coursId + "/supports";
     }
+
 }

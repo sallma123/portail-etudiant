@@ -1,0 +1,34 @@
+<!-- templates/fragments/header.html -->
+<div th:fragment="customHeader">
+    <nav class="navbar navbar-expand-lg px-4 py-2"
+    style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
+    <div class="container-fluid justify-content-between align-items-center">
+
+        <!-- Logo + Titre -->
+        <div class="d-flex align-items-center">
+            <img src="/images/logo.png" alt="Logo" style="height: 28px; margin-right: 8px;"> <!-- ✅ plus petit -->
+            <span class="fw-bold fs-5 text-white">AcadéLink</span>
+        </div>
+
+        <!-- Rôle + Nom + Déconnexion -->
+        <div class="d-flex align-items-center gap-3">
+                <span class="text-white d-flex align-items-center">
+                    <i class="bi bi-person-fill me-1"></i>
+                    <span th:each="r : ${roles}">
+                        <span th:switch="${r.authority}">
+                            <span th:case="'ROLE_ADMIN'">Admin : </span>
+                            <span th:case="'ROLE_ENSEIGNANT'">Enseignant : </span>
+                            <span th:case="'ROLE_ETUDIANT'">Étudiant : </span>
+                        </span>
+                    </span>
+                    <span th:text="${fullName}">Utilisateur</span>
+                </span>
+
+            <a th:href="@{/logout}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-box-arrow-right"></i> Déconnexion
+            </a>
+        </div>
+
+    </div>
+    </nav>
+</div>
