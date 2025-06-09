@@ -1,70 +1,53 @@
+<!-- templates/ajouter-support.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Ajouter un support</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <style>
-        body {
-            background: linear-gradient(to right, #667eea, #764ba2);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .card {
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            background: white;
-            max-width: 600px;
-            width: 100%;
-        }
-        .btn-purple {
-            background-color: #764ba2;
-            color: white;
-            border: none;
-        }
-        .btn-purple:hover {
-            background-color: #5e3b89;
-        }
-    </style>
-</head>
-<body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::section})"
+      th:with="pageTitle='Ajouter un support', pageContent=~{::section}">
 
-<div class="card">
-    <h4 class="mb-4 text-center">➕ Ajouter un support pour : <span th:text="${cours.titre}"></span></h4>
+<section class="d-flex justify-content-center align-items-center" style="min-height: 90vh;">
+    <div class="card p-4 shadow-lg" style="max-width: 600px; width: 100%;">
 
-    <form method="post"
-          th:action="@{'/enseignant/cours/' + ${cours.id} + '/upload-support'}"
-          enctype="multipart/form-data">
+        <h4 class="mb-4 text-center">
+            <i class="bi bi-plus-circle-fill me-2"></i>
+            Ajouter un support pour : <span th:text="${cours.titre}">Nom du cours</span>
+        </h4>
 
-        <div class="mb-3">
-            <label class="form-label">Nom du fichier</label>
-            <input type="text" name="nomFichier" class="form-control" required />
-        </div>
+        <form method="post"
+              th:action="@{'/enseignant/cours/' + ${cours.id} + '/upload-support'}"
+              enctype="multipart/form-data">
 
-        <div class="mb-3">
-            <label class="form-label">Type de support</label>
-            <select name="type" class="form-select" required>
-                <option value="PDF">📄 PDF</option>
-                <option value="VIDEO">🎥 Vidéo</option>
-                <option value="SLIDE">📊 Slide</option>
-            </select>
-        </div>
+            <!-- Nom du fichier -->
+            <div class="mb-3">
+                <label class="form-label">Nom du fichier</label>
+                <input type="text" name="nomFichier" class="form-control" required />
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Fichier à téléverser</label>
-            <input type="file" name="file" class="form-control" accept=".pdf,.mp4,.ppt,.pptx" required />
-        </div>
+            <!-- Type de support -->
+            <div class="mb-3">
+                <label class="form-label">Type de support</label>
+                <select name="type" class="form-select" required>
+                    <option value="PDF"><i class="bi bi-file-earmark-pdf-fill"></i> PDF</option>
+                    <option value="VIDEO"><i class="bi bi-camera-video-fill"></i> Vidéo</option>
+                    <option value="SLIDE"><i class="bi bi-bar-chart-fill"></i> Slide</option>
+                </select>
+            </div>
 
-        <div class="d-flex justify-content-between">
-            <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">↩ Retour</a>
-            <button type="submit" class="btn btn-purple">✅ Uploader</button>
-        </div>
-    </form>
-</div>
+            <!-- Fichier à téléverser -->
+            <div class="mb-3">
+                <label class="form-label">Fichier à téléverser</label>
+                <input type="file" name="file" class="form-control" accept=".pdf,.mp4,.ppt,.pptx" required />
+            </div>
 
-</body>
+            <!-- Actions -->
+            <div class="d-flex justify-content-between">
+                <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle"></i> Retour
+                </a>
+                <button type="submit" class="btn btn-purple">
+                    <i class="bi bi-upload"></i> Uploader
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 </html>

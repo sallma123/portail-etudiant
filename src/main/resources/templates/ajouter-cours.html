@@ -1,62 +1,40 @@
+<!-- templates/ajouter-cours.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Ajouter un cours</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(to right, #667eea, #764ba2);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .card {
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            width: 100%;
-            max-width: 600px;
-            background: white;
-        }
-        .btn-purple {
-            background-color: #764ba2;
-            color: white;
-            border: none;
-        }
-        .btn-purple:hover {
-            background-color: #5e3b89;
-        }
-    </style>
-</head>
-<body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::section})"
+      th:with="pageTitle='Ajouter un cours', pageContent=~{::section}">
 
-<div class="card">
-    <h3 class="mb-4 text-center">➕ Ajouter un nouveau cours</h3>
+<section class="d-flex justify-content-center">
+    <div class="card-custom" style="max-width: 600px; width: 100%;">
+        <h3 class="mb-4 text-center">
+            <i class="bi bi-plus-circle-fill me-2"></i>Ajouter un nouveau cours
+        </h3>
 
-    <form method="post" th:action="@{/enseignant/ajouter-cours}" th:object="${cours}">
-        <div class="mb-3">
-            <label class="form-label">Titre du cours</label>
-            <input type="text" th:field="*{titre}" class="form-control" required />
-        </div>
+        <form method="post" th:action="@{/enseignant/ajouter-cours}" th:object="${cours}">
+            <div class="mb-3">
+                <label class="form-label">Titre du cours</label>
+                <input type="text" th:field="*{titre}" class="form-control" required />
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Description</label>
-            <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
+            </div>
 
-        <div class="mb-3">
-            <label class="form-label">Catégorie</label>
-            <input type="text" th:field="*{categorie}" class="form-control" required />
-        </div>
+            <div class="mb-3">
+                <label class="form-label">Catégorie</label>
+                <input type="text" th:field="*{categorie}" class="form-control" required />
+            </div>
 
-        <div class="d-flex justify-content-between">
-            <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">↩ Retour</a>
-            <button type="submit" class="btn btn-purple">✅ Enregistrer</button>
-        </div>
-    </form>
-</div>
-
-</body>
+            <div class="d-flex justify-content-between">
+                <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle me-1"></i>Retour
+                </a>
+                <button type="submit" class="btn btn-purple">
+                    <i class="bi bi-check-circle-fill me-1"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
 </html>

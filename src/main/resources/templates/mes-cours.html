@@ -1,90 +1,73 @@
+<!-- templates/enseignant-cours.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Mes cours</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(to right, #667eea, #764ba2);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: start;
-            padding: 2rem;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        .card {
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            width: 100%;
-            background: white;
-        }
-        .btn-purple {
-            background-color: #764ba2;
-            color: white;
-            border: none;
-        }
-        .btn-purple:hover {
-            background-color: #5e3b89;
-        }
-    </style>
-</head>
-<body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::section})"
+      th:with="pageTitle='Mes cours', pageContent=~{::section}">
 
-<div class="card container">
-    <h2 class="mb-4 text-center">📚 Mes cours</h2>
+<section>
+    <h2 class="mb-4 text-center">
+        <i class="bi bi-journal-bookmark-fill me-2"></i>Mes cours
+    </h2>
 
     <div class="d-flex justify-content-end mb-3">
-        <a href="/enseignant/ajouter-cours" class="btn btn-purple">➕ Ajouter un nouveau cours</a>
+        <a href="/enseignant/ajouter-cours" class="btn btn-purple">
+            <i class="bi bi-plus-circle-fill me-1"></i>Ajouter un nouveau cours
+        </a>
     </div>
 
-    <table class="table table-bordered table-hover text-center align-middle">
-        <thead class="table-light">
-        <tr>
-            <th>Titre</th>
-            <th>Description</th>
-            <th>Catégorie</th>
-            <th>Date de création</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="cours : ${coursList}">
-            <td th:text="${cours.titre}"></td>
-            <td th:text="${cours.description}"></td>
-            <td th:text="${cours.categorie}"></td>
-            <td th:text="${cours.dateCreation}"></td>
-            <td class="d-flex flex-wrap gap-1 justify-content-center">
+    <div class="card-custom">
+        <table class="table table-bordered table-hover text-center align-middle">
+            <thead class="table-light">
+            <tr>
+                <th>Titre</th>
+                <th>Description</th>
+                <th>Catégorie</th>
+                <th>Date de création</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cours : ${coursList}">
+                <td th:text="${cours.titre}"></td>
+                <td th:text="${cours.description}"></td>
+                <td th:text="${cours.categorie}"></td>
+                <td th:text="${cours.dateCreation}"></td>
+                <td class="d-flex flex-wrap gap-1 justify-content-center">
 
-                <!-- 📁 Gérer supports -->
-                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
-                   class="btn btn-sm btn-outline-primary">📁 Gérer supports</a>
+                    <!-- 📁 Gérer supports -->
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-folder-fill me-1"></i>Gérer supports
+                    </a>
 
-                <!-- 📝 Gérer quiz ou supprimer quiz -->
-                <div th:if="${cours.quiz == null}">
-                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/creer-quiz'}"
-                       class="btn btn-sm btn-outline-success">📝 Créer quiz</a>
-                </div>
-                <div th:if="${cours.quiz != null}">
+                    <!-- 📝 Créer ou Supprimer quiz -->
+                    <div th:if="${cours.quiz == null}">
+                        <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/creer-quiz'}"
+                           class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-pencil-square me-1"></i>Créer quiz
+                        </a>
+                    </div>
                     <div th:if="${cours.quiz != null}">
-                        <form th:action="@{'/enseignant/quiz/' + ${cours.quiz.id} + '/supprimer'}" method="post"
-                              onsubmit="return confirm('❌ Voulez-vous vraiment supprimer ce quiz ?');">
-                            <button type="submit" class="btn btn-sm btn-outline-warning">🗑 Supprimer quiz</button>
+                        <form th:action="@{'/enseignant/quiz/' + ${cours.quiz.id} + '/supprimer'}"
+                              method="post"
+                              onsubmit="return confirm('Voulez-vous vraiment supprimer ce quiz ?');">
+                            <button type="submit" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-trash3-fill me-1"></i>Supprimer quiz
+                            </button>
                         </form>
                     </div>
-                </div>
 
-                <!-- 🗑 Supprimer cours -->
-                <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}"
-                   class="btn btn-sm btn-outline-danger"
-                   onclick="return confirm('⚠️ Êtes-vous sûr de vouloir supprimer ce cours ?');">🗑 Supprimer</a>
+                    <!-- ❌ Supprimer cours -->
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}"
+                       class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?');">
+                        <i class="bi bi-trash-fill me-1"></i>Supprimer
+                    </a>
 
-            </td>
-        </tr>
-        </tbody>
-    </table>
-</div>
-
-</body>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 </html>
