@@ -114,6 +114,8 @@ public class EtudiantController {
         // 💬 Forum intégré
         model.addAttribute("messages", forumService.getMessagesParCours(cours));
         model.addAttribute("nouveauMessage", new MessageForum());
+        model.addAttribute("utilisateurConnecte", etudiant);
+
 
         return "support-etudiant";
     }
@@ -149,4 +151,13 @@ public class EtudiantController {
         Long coursId = support.getCours().getId();
         return "redirect:/etudiant/cours/" + coursId + "/supports";
     }
+    @PostMapping("/cours/{coursId}/forum/{messageId}/supprimer")
+    public String supprimerMessageForum(@PathVariable Long coursId,
+                                        @PathVariable Long messageId,
+                                        @AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        forumService.supprimerMessage(messageId, user);
+        return "redirect:/etudiant/cours/" + coursId + "/supports";
+    }
+
 }

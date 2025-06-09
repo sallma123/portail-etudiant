@@ -2,6 +2,7 @@ package com.etudiant.gestion_etudiant.service;
 
 import com.etudiant.gestion_etudiant.entity.Cours;
 import com.etudiant.gestion_etudiant.entity.MessageForum;
+import com.etudiant.gestion_etudiant.entity.User;
 import com.etudiant.gestion_etudiant.repository.MessageForumRepository;
 import org.springframework.stereotype.Service;
 
@@ -27,4 +28,15 @@ public class ForumService {
         message.setDate(LocalDateTime.now());
         messageForumRepository.save(message);
     }
+    public void supprimerMessage(Long id, User userConnecte) {
+        MessageForum msg = messageForumRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Message introuvable"));
+
+        if (!msg.getAuteur().getId().equals(userConnecte.getId())) {
+            throw new RuntimeException("Vous ne pouvez supprimer que vos propres messages");
+        }
+
+        messageForumRepository.delete(msg);
+    }
+
 }
