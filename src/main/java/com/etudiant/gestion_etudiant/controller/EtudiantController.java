@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,9 @@ public class EtudiantController {
     @Autowired private InscriptionRepository inscriptionRepository;
     @Autowired private QuizService quizService;
     @Autowired private ResultatService resultatService;
+    @Autowired private ForumService forumService; // ✅ Ajout
 
+    // 📚 Liste des cours disponibles
     @GetMapping("/cours-disponibles")
     public String coursDisponibles(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -46,6 +49,7 @@ public class EtudiantController {
         return "cours-disponibles";
     }
 
+    // ✅ Inscription à un cours
     @GetMapping("/s-inscrire/{coursId}")
     public String inscrire(@PathVariable Long coursId, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -54,6 +58,7 @@ public class EtudiantController {
         return "redirect:/etudiant/cours-disponibles";
     }
 
+    // ✅ Page support + forum
     @GetMapping("/cours/{id}/supports")
     public String voirSupports(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -63,6 +68,7 @@ public class EtudiantController {
             return "redirect:/etudiant/cours-disponibles";
         }
 
+        // 📁 Supports
         List<Support> supports = supportRepository.findByCours(cours);
         Map<Long, Boolean> vus = new HashMap<>();
         boolean supportsNonVus = false;
@@ -78,6 +84,7 @@ public class EtudiantController {
         model.addAttribute("supportsVus", vus);
         model.addAttribute("supportsNonVus", supportsNonVus);
 
+        // 🎯 Quiz + certificat
         Optional<Quiz> quizOpt = quizService.getQuizByCours(cours);
         if (quizOpt.isPresent()) {
             Quiz quiz = quizOpt.get();
@@ -104,9 +111,35 @@ public class EtudiantController {
             model.addAttribute("quizExiste", false);
         }
 
+        // 💬 Forum intégré
+        model.addAttribute("messages", forumService.getMessagesParCours(cours));
+        model.addAttribute("nouveauMessage", new MessageForum());
+
         return "support-etudiant";
     }
 
+    // ✅ Envoi d'un message dans le forum
+    @PostMapping("/cours/{id}/forum-integré")
+    public String posterMessageForum(@PathVariable Long id,
+                                     @RequestParam("contenu") String contenu,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
+
+        User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        Cours cours = coursRepository.findById(id).orElseThrow();
+
+        MessageForum message = new MessageForum();
+        message.setAuteur(etudiant);
+        message.setCours(cours);
+        message.setContenu(contenu);
+        message.setDate(LocalDateTime.now());
+
+        forumService.ajouterMessage(message);
+
+        return "redirect:/etudiant/cours/" + id + "/supports";
+    }
+
+
+    // ✅ Marquer un support comme vu
     @GetMapping("/support/{id}/voir")
     public String voirSupport(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -116,5 +149,4 @@ public class EtudiantController {
         Long coursId = support.getCours().getId();
         return "redirect:/etudiant/cours/" + coursId + "/supports";
     }
-
 }
