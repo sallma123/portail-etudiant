@@ -13,13 +13,44 @@
             <!-- Rôle + Nom + Icônes + Déconnexion -->
             <div class="d-flex align-items-center gap-3">
 
-                <!-- Icônes notification et messagerie (même taille que perso) -->
-                <a href="#" class="text-white fs-5 d-flex align-items-center">
-                    <i class="bi bi-bell-fill" style="font-size: 1.1rem;"></i>
+                <!-- 🔔 Notifications (placeholder) -->
+                <a href="#" class="text-white fs-5 d-flex align-items-center me-2">
+                    <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
                 </a>
-                <a href="#" class="text-white fs-5 d-flex align-items-center">
-                    <i class="bi bi-chat-dots-fill" style="font-size: 1.1rem;"></i>
-                </a>
+
+                <!-- 💬 Messagerie privée (dropdown) -->
+                <div class="dropdown">
+                    <a href="#" class="text-white fs-5 d-flex align-items-center" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-chat-dots-fill" style="font-size: 1.2rem;"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end p-2"
+                        style="width: 320px; max-height: 350px; overflow-y: auto;">
+                        <li class="dropdown-header text-center fw-bold">💬 Messages récents</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li th:each="msg : ${messagesRecents}">
+                            <a th:href="@{'/messagerie/discussion/' + ${msg.expediteur.id}}"
+                               class="dropdown-item d-flex flex-column">
+                                <div class="fw-bold" th:text="${msg.expediteur.prenom + ' ' + msg.expediteur.nom}">
+                                    Nom
+                                </div>
+                                <div class="text-muted small" th:text="${#strings.abbreviate(msg.contenu, 35)}">
+                                    Extrait...
+                                </div>
+                                <div class="text-muted small"
+                                     th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}">
+                                    Date
+                                </div>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="text-center">
+                            <a th:href="@{/messagerie}" class="btn btn-sm btn-outline-secondary">
+                                Voir tous les messages
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
                 <!-- Texte utilisateur -->
                 <span class="text-white d-flex align-items-center">
