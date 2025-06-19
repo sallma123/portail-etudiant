@@ -1,8 +1,8 @@
-<!-- templates/fragments/header.html -->
 <div th:fragment="customHeader">
     <nav class="navbar navbar-expand-lg px-4 py-2"
          style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
         <div class="container-fluid justify-content-between align-items-center">
+
             <!-- Logo + Titre -->
             <div class="d-flex align-items-center">
                 <img src="/images/logo.png" alt="Logo" style="height: 32px; margin-right: 8px;">
@@ -16,7 +16,8 @@
                 <div class="dropdown"
                      th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
                     <a href="#" class="text-white fs-5 d-flex align-items-center me-2"
-                       role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="marquerNotificationsCommeVues()">
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                       onclick="marquerNotificationsCommeVues()">
                         <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
                         <span id="badge-notif"
                               class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
@@ -47,9 +48,15 @@
                 <!-- 💬 Messagerie privée -->
                 <div class="dropdown"
                      th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
-                    <a href="#" class="text-white fs-5 d-flex align-items-center" role="button"
-                       data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="text-white fs-5 d-flex align-items-center position-relative"
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false"
+                       onclick="marquerMessagesCommeLus()">
                         <i class="bi bi-chat-dots-fill" style="font-size: 1.2rem;"></i>
+                        <span id="badge-message"
+                              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                              th:if="${hasMessagesNonLus}">
+                            <span class="visually-hidden">Nouveaux messages</span>
+                        </span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end p-2"
                         style="width: 320px; max-height: 350px; overflow-y: auto;">
@@ -104,7 +111,7 @@
         </div>
     </nav>
 
-    <!-- ✅ Script intégré : suppression du badge -->
+    <!-- ✅ Script intégré : suppression des badges -->
     <script>
         function marquerNotificationsCommeVues() {
             fetch('/notifications/marquer-vues', {
@@ -112,12 +119,23 @@
             }).then(response => {
                 if (response.ok) {
                     const badge = document.getElementById('badge-notif');
-                    if (badge) {
-                        badge.style.display = 'none';
-                    }
+                    if (badge) badge.style.display = 'none';
                 }
             }).catch(error => {
-                console.error("Erreur lors de la mise à jour des notifications :", error);
+                console.error("Erreur notification :", error);
+            });
+        }
+
+        function marquerMessagesCommeLus() {
+            fetch('/messagerie/marquer-lus', {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    const badge = document.getElementById('badge-message');
+                    if (badge) badge.style.display = 'none';
+                }
+            }).catch(error => {
+                console.error("Erreur message :", error);
             });
         }
     </script>

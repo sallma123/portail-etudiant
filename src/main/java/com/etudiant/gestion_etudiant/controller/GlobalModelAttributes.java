@@ -68,5 +68,14 @@ public class GlobalModelAttributes {
         if (user == null) return false;
         return !notificationService.getNotificationsNonVues(user).isEmpty();
     }
+    @ModelAttribute("hasMessagesNonLus")
+    public boolean afficherBadgeMessages(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return false;
+        User me = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (me == null) return false;
+
+        // Vérifie s’il existe des messages non lus pour cet utilisateur
+        return messagePriveRepository.existsByDestinataireAndLuFalse(me);
+    }
 
 }

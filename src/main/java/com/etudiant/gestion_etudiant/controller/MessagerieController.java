@@ -2,6 +2,7 @@ package com.etudiant.gestion_etudiant.controller;
 
 import com.etudiant.gestion_etudiant.entity.MessagePrive;
 import com.etudiant.gestion_etudiant.entity.User;
+import com.etudiant.gestion_etudiant.repository.MessagePriveRepository;
 import com.etudiant.gestion_etudiant.repository.UserRepository;
 import com.etudiant.gestion_etudiant.service.MessagerieService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class MessagerieController {
 
     @Autowired private UserRepository userRepository;
     @Autowired private MessagerieService messagerieService;
+    @Autowired private MessagePriveRepository messagePriveRepository;
 
     // ✅ Page principale sans utilisateur sélectionné
     @GetMapping
@@ -90,5 +92,17 @@ public class MessagerieController {
         messagerieService.envoyerMessage(me, destinataire, contenu);
 
         return "redirect:/messagerie/discussion/" + id;
+    }
+
+    // ✅ Marquer tous les messages reçus comme lus (pour le badge rouge)
+    @PostMapping("/marquer-lus")
+    @ResponseBody
+    public void marquerMessagesCommeLus(@AuthenticationPrincipal UserDetails userDetails) {
+        User me = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
+        List<MessagePrive> nonLus = messagePriveRepository.findByDestinataireAndLuFalse(me);
+        for (MessagePrive msg : nonLus) {
+            msg.setLu(true);
+        }
+        messagePriveRepository.saveAll(nonLus);
     }
 }

@@ -18,5 +18,7 @@ public interface MessagePriveRepository extends JpaRepository<MessagePrive, Long
             "ORDER BY m.date ASC")
     List<MessagePrive> findByExpediteurAndDestinataireOrViceVersa(User u1, User u2);
     List<MessagePrive> findByExpediteurOrDestinataireOrderByDateDesc(User expediteur, User destinataire);
+    boolean existsByDestinataireAndLuFalse(User destinataire);
+    List<MessagePrive> findByDestinataireAndLuFalse(User destinataire);
 
 }
