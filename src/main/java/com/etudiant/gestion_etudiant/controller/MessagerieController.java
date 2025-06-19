@@ -27,6 +27,10 @@ public class MessagerieController {
 
         List<User> autres = userRepository.findAll().stream()
                 .filter(u -> !u.getId().equals(me.getId()))
+                .filter(u -> {
+                    String role = u.getRole().getName();
+                    return role.equals("ROLE_ETUDIANT") || role.equals("ROLE_ENSEIGNANT");
+                })
                 .toList();
 
         model.addAttribute("utilisateurs", autres);
@@ -45,8 +49,18 @@ public class MessagerieController {
         User me = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         User autre = userRepository.findById(id).orElseThrow();
 
+        // ❌ Bloquer les discussions avec des administrateurs
+        String role = autre.getRole().getName();
+        if (!role.equals("ROLE_ETUDIANT") && !role.equals("ROLE_ENSEIGNANT")) {
+            return "redirect:/messagerie";
+        }
+
         List<User> autresUtilisateurs = userRepository.findAll().stream()
                 .filter(u -> !u.getId().equals(me.getId()))
+                .filter(u -> {
+                    String r = u.getRole().getName();
+                    return r.equals("ROLE_ETUDIANT") || r.equals("ROLE_ENSEIGNANT");
+                })
                 .toList();
 
         List<MessagePrive> messages = messagerieService.getConversation(me, autre);
@@ -66,6 +80,12 @@ public class MessagerieController {
                                  @AuthenticationPrincipal UserDetails userDetails) {
         User me = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         User destinataire = userRepository.findById(id).orElseThrow();
+
+        // ❌ Ne pas permettre d’envoyer à un admin
+        String role = destinataire.getRole().getName();
+        if (!role.equals("ROLE_ETUDIANT") && !role.equals("ROLE_ENSEIGNANT")) {
+            return "redirect:/messagerie";
+        }
 
         messagerieService.envoyerMessage(me, destinataire, contenu);
 
