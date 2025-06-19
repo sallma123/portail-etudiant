@@ -61,4 +61,12 @@ public class GlobalModelAttributes {
         if (userDetails == null) return null;
         return userRepository.findByEmail(userDetails.getUsername()).orElse(null);
     }
+    @ModelAttribute("notifNonVues")
+    public boolean afficherBadgeNotification(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return false;
+        User user = userRepository.findByEmail(userDetails.getUsername()).orElse(null);
+        if (user == null) return false;
+        return !notificationService.getNotificationsNonVues(user).isEmpty();
+    }
+
 }

@@ -18,8 +18,9 @@
                     <a href="#" class="text-white fs-5 d-flex align-items-center me-2"
                        role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="marquerNotificationsCommeVues()">
                         <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
-                        <span id="badge-notif" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
-                              th:if="${notifications != null and notifications.size() > 0}">
+                        <span id="badge-notif"
+                              class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                              th:if="${notifNonVues}">
                             <span class="visually-hidden">Nouvelles notifications</span>
                         </span>
                     </a>
