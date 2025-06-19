@@ -13,10 +13,12 @@
             <!-- Rôle + Nom + Icônes + Déconnexion -->
             <div class="d-flex align-items-center gap-3">
 
-                <!-- 🔔 Notifications -->
-                <a href="#" class="text-white fs-5 d-flex align-items-center me-2">
-                    <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
-                </a>
+                <!-- 🔔 Notifications (enseignant/étudiant uniquement) -->
+                <div th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
+                    <a href="#" class="text-white fs-5 d-flex align-items-center me-2">
+                        <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
+                    </a>
+                </div>
 
                 <!-- 💬 Messagerie privée (enseignant/étudiant uniquement) -->
                 <div class="dropdown"
