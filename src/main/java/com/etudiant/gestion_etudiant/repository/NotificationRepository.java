@@ -10,4 +10,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findTop5ByDestinataireOrderByDateDesc(User destinataire);
 
     List<Notification> findByDestinataireAndVueFalseOrderByDateDesc(User destinataire);
+
+    // 🔴 Pour compter les notifications non vues (badge rouge)
+    int countByDestinataireAndVueFalse(User destinataire);
 }

@@ -18,6 +18,9 @@ public class Notification {
 
     @ManyToOne
     private User destinataire;
+    @Column(nullable = false)
+    private boolean lue = false;
+
 
     // Getters & setters
     public Long getId() { return id; }

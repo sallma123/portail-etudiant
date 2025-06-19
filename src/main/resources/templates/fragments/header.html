@@ -3,7 +3,6 @@
     <nav class="navbar navbar-expand-lg px-4 py-2"
          style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
         <div class="container-fluid justify-content-between align-items-center">
-
             <!-- Logo + Titre -->
             <div class="d-flex align-items-center">
                 <img src="/images/logo.png" alt="Logo" style="height: 32px; margin-right: 8px;">
@@ -13,13 +12,13 @@
             <!-- Rôle + Nom + Icônes + Déconnexion -->
             <div class="d-flex align-items-center gap-3">
 
-                <!-- 🔔 Notifications (enseignant/étudiant uniquement) -->
+                <!-- 🔔 Notifications -->
                 <div class="dropdown"
                      th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
                     <a href="#" class="text-white fs-5 d-flex align-items-center me-2"
-                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                       role="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="marquerNotificationsCommeVues()">
                         <i class="bi bi-bell-fill" style="font-size: 1.2rem;"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
+                        <span id="badge-notif" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"
                               th:if="${notifications != null and notifications.size() > 0}">
                             <span class="visually-hidden">Nouvelles notifications</span>
                         </span>
@@ -30,8 +29,6 @@
                             <i class="bi bi-bell-fill me-1"></i> Notifications
                         </li>
                         <li><hr class="dropdown-divider"></li>
-
-                        <!-- ✅ Liste des notifications -->
                         <li th:each="notif : ${notifications}">
                             <div class="dropdown-item d-flex flex-column"
                                  th:classappend="${!notif.vue} ? 'fw-bold' : ''">
@@ -40,14 +37,13 @@
                                      th:text="${#temporals.format(notif.date, 'dd/MM/yyyy HH:mm')}">Date</div>
                             </div>
                         </li>
-
                         <li th:if="${notifications.size() == 0}">
                             <div class="dropdown-item text-center text-muted">Aucune notification</div>
                         </li>
                     </ul>
                 </div>
 
-                <!-- 💬 Messagerie privée (enseignant/étudiant uniquement) -->
+                <!-- 💬 Messagerie privée -->
                 <div class="dropdown"
                      th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
                     <a href="#" class="text-white fs-5 d-flex align-items-center" role="button"
@@ -60,8 +56,6 @@
                             <i class="bi bi-chat-left-text-fill me-1"></i> Messages récents
                         </li>
                         <li><hr class="dropdown-divider"></li>
-
-                        <!-- ✅ Liste des conversations -->
                         <li th:each="msg : ${messagesRecents}">
                             <a th:href="${'/messagerie/discussion/' +
                                 (msg.expediteur.id == utilisateurConnecte.id
@@ -79,7 +73,6 @@
                                      th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}">Date</div>
                             </a>
                         </li>
-
                         <li><hr class="dropdown-divider"></li>
                         <li class="text-center">
                             <a th:href="@{/messagerie}" class="btn btn-sm btn-outline-secondary">
@@ -109,4 +102,22 @@
             </div>
         </div>
     </nav>
+
+    <!-- ✅ Script intégré : suppression du badge -->
+    <script>
+        function marquerNotificationsCommeVues() {
+            fetch('/notifications/marquer-vues', {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    const badge = document.getElementById('badge-notif');
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                }
+            }).catch(error => {
+                console.error("Erreur lors de la mise à jour des notifications :", error);
+            });
+        }
+    </script>
 </div>
