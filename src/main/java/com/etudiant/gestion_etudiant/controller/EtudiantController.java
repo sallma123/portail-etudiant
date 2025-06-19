@@ -130,6 +130,7 @@ public class EtudiantController {
     }
 
     // ✅ Envoi d'un message dans le forum
+    // ✅ Envoi d'un message dans le forum
     @PostMapping("/cours/{id}/forum-integré")
     public String posterMessageForum(@PathVariable Long id,
                                      @RequestParam("contenu") String contenu,
@@ -158,8 +159,18 @@ public class EtudiantController {
             }
         }
 
+        // 🔔 Notification à l'enseignant (si ce n’est pas lui qui écrit)
+        User enseignant = cours.getEnseignant();
+        if (!enseignant.getId().equals(etudiant.getId())) {
+            notificationService.envoyerNotification(
+                    enseignant,
+                    etudiant.getPrenom() + " a commenté dans le forum du cours : " + cours.getTitre()
+            );
+        }
+
         return "redirect:/etudiant/cours/" + id + "/supports";
     }
+
 
 
     // ✅ Marquer un support comme vu
