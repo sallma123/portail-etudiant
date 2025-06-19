@@ -91,20 +91,6 @@ public class PageController {
         return "mes-cours";
     }
 
-    // ➕ Ajouter un cours
-    @GetMapping("/enseignant/ajouter-cours")
-    public String afficherFormulaireCours(Model model) {
-        model.addAttribute("cours", new Cours());
-        return "ajouter-cours";
-    }
-
-    @PostMapping("/enseignant/ajouter-cours")
-    public String enregistrerCours(@ModelAttribute("cours") Cours cours,
-                                   @AuthenticationPrincipal(expression = "username") String email) {
-        User enseignant = userService.findByEmail(email);
-        coursService.ajouterCours(cours, enseignant);
-        return "redirect:/enseignant/mes-cours";
-    }
 
     // 📄 Liste des supports d’un cours
     @GetMapping("/enseignant/cours/{id}/supports")

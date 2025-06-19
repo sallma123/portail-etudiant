@@ -26,7 +26,9 @@ public class EtudiantController {
     @Autowired private InscriptionRepository inscriptionRepository;
     @Autowired private QuizService quizService;
     @Autowired private ResultatService resultatService;
-    @Autowired private ForumService forumService; // ✅ Ajout
+    @Autowired private ForumService forumService;
+    @Autowired private NotificationService notificationService;
+
 
     // 📚 Liste des cours disponibles
     @GetMapping("/cours-disponibles")
@@ -54,7 +56,14 @@ public class EtudiantController {
     public String inscrire(@PathVariable Long coursId, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Cours cours = coursRepository.findById(coursId).orElseThrow();
+
+        // Inscrire l'étudiant
         inscriptionService.inscrireEtudiant(etudiant, cours);
+
+        // 🔔 Notifier l'enseignant
+        String message = etudiant.getPrenom() + " " + etudiant.getNom() + " s’est inscrit à votre cours : " + cours.getTitre();
+        notificationService.envoyerNotification(cours.getEnseignant(), message);
+
         return "redirect:/etudiant/cours-disponibles";
     }
 
@@ -129,13 +138,25 @@ public class EtudiantController {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Cours cours = coursRepository.findById(id).orElseThrow();
 
+        // Enregistrement du message
         MessageForum message = new MessageForum();
         message.setAuteur(etudiant);
         message.setCours(cours);
         message.setContenu(contenu);
         message.setDate(LocalDateTime.now());
-
         forumService.ajouterMessage(message);
+
+        // 🔔 Notification aux autres étudiants inscrits au cours
+        List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
+        for (Inscription insc : inscriptions) {
+            User autreEtudiant = insc.getEtudiant();
+            if (!autreEtudiant.getId().equals(etudiant.getId())) {
+                notificationService.envoyerNotification(
+                        autreEtudiant,
+                        "Nouveau commentaire dans le forum du cours : " + cours.getTitre()
+                );
+            }
+        }
 
         return "redirect:/etudiant/cours/" + id + "/supports";
     }

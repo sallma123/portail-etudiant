@@ -15,45 +15,41 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/enseignant/cours")
+@RequestMapping("/api/enseignant/cours")
 public class CoursController {
 
-    @Autowired
-    private CoursService coursService;
+    @Autowired private CoursService coursService;
+    @Autowired private SupportService supportService;
+    @Autowired private UserService userService;
 
-    @Autowired
-    private SupportService supportService;
-
-    @Autowired
-    private UserService userService;
-
-    // ✅ Lister les cours de l'enseignant connecté
+    // ✅ Liste des cours pour API
     @GetMapping
     public List<Cours> getCours(@AuthenticationPrincipal(expression = "username") String email) {
         User enseignant = userService.findByEmail(email);
         return coursService.getCoursParEnseignant(enseignant);
     }
 
-    // ✅ Ajouter un nouveau cours
+    // ✅ Ajouter un cours via API (pas notification ici)
     @PostMapping
-    public Cours ajouterCours(@RequestBody Cours cours, @AuthenticationPrincipal(expression = "username") String email) {
+    public Cours ajouterCours(@RequestBody Cours cours,
+                              @AuthenticationPrincipal(expression = "username") String email) {
         User enseignant = userService.findByEmail(email);
         return coursService.ajouterCours(cours, enseignant);
     }
 
-    // ✅ Modifier un cours
+    // ✅ Modifier un cours via API
     @PutMapping("/{id}")
     public Cours modifierCours(@PathVariable Long id, @RequestBody Cours coursModifie) {
         return coursService.modifierCours(id, coursModifie);
     }
 
-    // ✅ Supprimer un cours (et ses supports associés)
+    // ✅ Supprimer un cours via API
     @DeleteMapping("/{id}")
     public void supprimerCours(@PathVariable Long id) {
         coursService.supprimerCoursEtSupports(id);
     }
 
-    // ✅ Ajouter un support à un cours
+    // ✅ Ajouter un support
     @PostMapping("/{id}/supports")
     public Support ajouterSupport(@PathVariable Long id, @RequestBody Support support) {
         Optional<Cours> coursOpt = coursService.getCoursParId(id);
@@ -64,7 +60,7 @@ public class CoursController {
         }
     }
 
-    // ✅ Lister les supports d’un cours
+    // ✅ Lister les supports
     @GetMapping("/{id}/supports-api")
     public List<Support> getSupports(@PathVariable Long id) {
         Optional<Cours> coursOpt = coursService.getCoursParId(id);

@@ -25,6 +25,8 @@ public class QuizController {
     @Autowired private ResultatService resultatService;
     @Autowired private CertificatGeneratorService certificatGeneratorService;
     @Autowired private ReponseRepository reponseRepository;
+    @Autowired private NotificationService notificationService;
+
 
     // ✅ Partie Enseignant
 
@@ -120,6 +122,7 @@ public class QuizController {
                                 @RequestParam Map<String, String> params,
                                 Principal principal,
                                 Model model) {
+
         User etudiant = userRepository.findByEmail(principal.getName()).orElseThrow();
         Map<Long, List<Long>> reponsesEtudiant = new HashMap<>();
 
@@ -127,7 +130,8 @@ public class QuizController {
             if (key.startsWith("reponses[")) {
                 Long qId = Long.parseLong(key.replace("reponses[", "").replace("]", ""));
                 List<Long> rIds = Arrays.stream(params.get(key).split(","))
-                        .map(Long::parseLong).collect(Collectors.toList());
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
                 reponsesEtudiant.put(qId, rIds);
             }
         }
@@ -138,6 +142,7 @@ public class QuizController {
 
         String nomFichier = null;
         if (note >= quiz.getSeuil()) {
+            // ✅ Générer le certificat
             nomFichier = etudiant.getPrenom().replaceAll(" ", "_") + "_" +
                     etudiant.getNom().replaceAll(" ", "_") + "_" +
                     cours.getTitre().replaceAll(" ", "_") + ".pdf";
@@ -148,12 +153,18 @@ public class QuizController {
                     note,
                     LocalDate.now()
             );
+
+            // ✅ Envoyer notification à l'enseignant
+            String message = etudiant.getPrenom() + " " + etudiant.getNom()
+                    + " a réussi le quiz du cours : " + cours.getTitre();
+            notificationService.envoyerNotification(cours.getEnseignant(), message);
         }
 
         model.addAttribute("quiz", quiz);
         model.addAttribute("note", note);
         model.addAttribute("nomFichier", nomFichier);
-        model.addAttribute("cours", cours); // pour retour vers les supports
+        model.addAttribute("cours", cours);
         return "resultat-quiz";
     }
+
 }
