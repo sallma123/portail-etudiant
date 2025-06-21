@@ -2,6 +2,7 @@ package com.etudiant.gestion_etudiant.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -27,4 +28,12 @@ public class EmailService {
             throw new RuntimeException("Erreur lors de l'envoi de l'email", e);
         }
     }
+    public void envoyerNotificationEmail(String to, String sujet, String corps) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject(sujet);
+        message.setText(corps);
+        mailSender.send(message);
+    }
+
 }
