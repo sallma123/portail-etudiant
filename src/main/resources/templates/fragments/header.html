@@ -33,11 +33,13 @@
                         <li><hr class="dropdown-divider"></li>
                         <li th:each="notif : ${notifications}">
                             <div class="dropdown-item d-flex flex-column"
-                                 th:classappend="${!notif.vue} ? 'fw-bold' : ''">
-                                <div th:text="${notif.message}">Contenu</div>
+                                 th:classappend="${!notif.vue} ? 'fw-bold' : ''"
+                                 style="white-space: normal; word-wrap: break-word; max-width: 100%;">
+                                <div th:text="${notif.message}" style="white-space: normal;">Contenu</div>
                                 <div class="text-muted small"
                                      th:text="${#temporals.format(notif.date, 'dd/MM/yyyy HH:mm')}">Date</div>
                             </div>
+
                         </li>
                         <li th:if="${notifications.size() == 0}">
                             <div class="dropdown-item text-center text-muted">Aucune notification</div>
