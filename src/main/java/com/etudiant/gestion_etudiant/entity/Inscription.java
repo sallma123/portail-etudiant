@@ -22,21 +22,69 @@ public class Inscription {
 
     private int progression;
 
+    private Double note;  // ✅ Ajouté : note de l'étudiant dans ce cours
+
+    private boolean certificatObtenu;  // ✅ Ajouté : si le certificat a été obtenu
+
     // Getters et Setters
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public User getEtudiant() { return etudiant; }
-    public void setEtudiant(User etudiant) { this.etudiant = etudiant; }
+    public User getEtudiant() {
+        return etudiant;
+    }
 
-    public Cours getCours() { return cours; }
-    public void setCours(Cours cours) { this.cours = cours; }
+    public void setEtudiant(User etudiant) {
+        this.etudiant = etudiant;
+    }
 
-    public LocalDate getDateInscription() { return dateInscription; }
-    public void setDateInscription(LocalDate dateInscription) { this.dateInscription = dateInscription; }
+    public Cours getCours() {
+        return cours;
+    }
 
-    public boolean isTermine() { return termine; }
-    public void setTermine(boolean termine) { this.termine = termine; }
+    public void setCours(Cours cours) {
+        this.cours = cours;
+    }
 
-    public int getProgression() { return progression; }
-    public void setProgression(int progression) { this.progression = progression; }
+    public LocalDate getDateInscription() {
+        return dateInscription;
+    }
+
+    public void setDateInscription(LocalDate dateInscription) {
+        this.dateInscription = dateInscription;
+    }
+
+    public boolean isTermine() {
+        return termine;
+    }
+
+    public void setTermine(boolean termine) {
+        this.termine = termine;
+    }
+
+    public int getProgression() {
+        return progression;
+    }
+
+    public void setProgression(int progression) {
+        this.progression = progression;
+    }
+
+    public Double getNote() {
+        return note;
+    }
+
+    public void setNote(Double note) {
+        this.note = note;
+    }
+
+    public boolean isCertificatObtenu() {
+        return certificatObtenu;
+    }
+
+    public void setCertificatObtenu(boolean certificatObtenu) {
+        this.certificatObtenu = certificatObtenu;
+    }
+
 }

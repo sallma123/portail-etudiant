@@ -1,8 +1,111 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><title>Étudiant</title></head>
-<body>
-<h2>Bienvenue Étudiant</h2>
-<p>Voici tes cours et tes notes.</p>
-</body>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout-dashboard :: layout(~{::section})"
+      th:with="pageTitle='Dashboard Étudiant', pageContent=~{::section}">
+
+<section>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .card-purple {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+        }
+        .stat-card {
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .btn-purple {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+        .btn-purple:hover {
+            background: #5a67d8;
+        }
+
+        /* Supprimer l’espace entre le header et le container */
+        .no-top-margin {
+            margin-top: 0 !important;
+        }
+    </style>
+
+    <!-- Retirer my-5 ici -->
+    <div class="container no-top-margin">
+        <!-- Cartes Résumé -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card-purple stat-card">
+                    <div class="stat-icon"><i class="bi bi-journal-bookmark"></i></div>
+                    <h6>Cours inscrits</h6>
+                    <h3 class="fw-bold" th:text="${coursInscrits}">5</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-purple stat-card" style="background-color: #28a745;">
+                    <div class="stat-icon"><i class="bi bi-patch-check"></i></div>
+                    <h6>Certificats obtenus</h6>
+                    <h3 class="fw-bold" th:text="${certificatsObtenus}">3</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-purple stat-card" style="background-color: #ffc107;">
+                    <div class="stat-icon"><i class="bi bi-graph-up"></i></div>
+                    <h6>Progression moyenne</h6>
+                    <h3 class="fw-bold" th:text="${progressionMoyenne}">78%</h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bloc Tableau moderne -->
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="d-flex justify-content-between align-items-center px-4 py-3"
+                 style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
+                <div class="fw-bold"><i class="bi bi-table me-2"></i>Suivi de mes cours</div>
+                <a href="/etudiant/cours-disponibles" class="btn btn-sm btn-light text-dark fw-semibold">Voir tous mes cours</a>
+            </div>
+
+
+            <div class="table-responsive p-4 pt-3">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Cours</th>
+                        <th>Note</th>
+                        <th>Certificat</th>
+                        <th>Progression</th>
+                        <th>Commentaires</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="cours : ${coursEtudiant}">
+                        <td th:text="${cours.nom}">Java Web</td>
+                        <td th:text="${cours.note}">15.5 / 20</td>
+                        <td>
+                            <span class="badge bg-success" th:if="${cours.certificat}">Oui</span>
+                            <span class="badge bg-secondary" th:unless="${cours.certificat}">Non</span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-info" role="progressbar"
+                                     th:style="'width:' + ${cours.progression} + '%'"
+                                     th:text="${cours.progression + '%'}"></div>
+                            </div>
+                        </td>
+                        <td th:text="${cours.nbCommentaires}">8</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
 </html>

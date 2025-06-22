@@ -1,15 +1,17 @@
 package com.etudiant.gestion_etudiant.service;
 
 import com.etudiant.gestion_etudiant.entity.Cours;
+import com.etudiant.gestion_etudiant.entity.Inscription;
 import com.etudiant.gestion_etudiant.entity.Question;
 import com.etudiant.gestion_etudiant.entity.Quiz;
 import com.etudiant.gestion_etudiant.entity.Reponse;
+import com.etudiant.gestion_etudiant.entity.User;
 import com.etudiant.gestion_etudiant.repository.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +21,7 @@ public class QuizService {
     @Autowired private QuizRepository quizRepository;
     @Autowired private QuestionRepository questionRepository;
     @Autowired private ReponseRepository reponseRepository;
+    @Autowired private InscriptionRepository inscriptionRepository;
 
     public Quiz ajouterQuiz(String titre, int seuil, Cours cours) {
         Quiz quiz = new Quiz();
@@ -78,8 +81,34 @@ public class QuizService {
         // Supprimer le quiz
         quizRepository.deleteById(quizId);
     }
+
     public void enregistrer(Quiz quiz) {
         quizRepository.save(quiz);
+    }
+
+    // ✅ Enregistrer la note de l'étudiant et certificat
+    public void enregistrerResultatEtudiant(User etudiant, Cours cours, double note, int seuil) {
+        Optional<Inscription> opt = inscriptionRepository.findByEtudiantAndCours(etudiant, cours);
+        if (opt.isPresent()) {
+            Inscription inscription = opt.get();
+
+            Double ancienneNote = inscription.getNote();
+            if (ancienneNote == null || note > ancienneNote) {
+                inscription.setNote(note);
+                inscription.setCertificatObtenu(note >= seuil);
+                inscriptionRepository.save(inscription);
+            }
+        } else {
+            // Si l'étudiant n'était pas encore inscrit (optionnel selon ton app)
+            Inscription nouvelle = new Inscription();
+            nouvelle.setEtudiant(etudiant);
+            nouvelle.setCours(cours);
+            nouvelle.setDateInscription(LocalDate.now());
+            nouvelle.setNote(note);
+            nouvelle.setCertificatObtenu(note >= seuil);
+            nouvelle.setProgression(100); // si besoin
+            inscriptionRepository.save(nouvelle);
+        }
     }
 
 }

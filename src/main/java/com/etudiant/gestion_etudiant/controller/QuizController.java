@@ -26,7 +26,7 @@ public class QuizController {
     @Autowired private CertificatGeneratorService certificatGeneratorService;
     @Autowired private ReponseRepository reponseRepository;
     @Autowired private NotificationService notificationService;
-
+    @Autowired private InscriptionRepository inscriptionRepository;
 
     // ✅ Partie Enseignant
 
@@ -140,9 +140,21 @@ public class QuizController {
         Quiz quiz = quizRepository.findById(id).orElseThrow();
         Cours cours = quiz.getCours();
 
+        // ✅ Mise à jour note et certificat dans inscription
+        Optional<Inscription> optInscription = inscriptionRepository.findByEtudiantAndCours(etudiant, cours);
+        if (optInscription.isPresent()) {
+            Inscription inscription = optInscription.get();
+
+            // mettre à jour si nouvelle note meilleure
+            if (inscription.getNote() == null || note > inscription.getNote()) {
+                inscription.setNote(note);
+                inscription.setCertificatObtenu(note >= quiz.getSeuil());
+                inscriptionRepository.save(inscription);
+            }
+        }
+
         String nomFichier = null;
         if (note >= quiz.getSeuil()) {
-            // ✅ Générer le certificat
             nomFichier = etudiant.getPrenom().replaceAll(" ", "_") + "_" +
                     etudiant.getNom().replaceAll(" ", "_") + "_" +
                     cours.getTitre().replaceAll(" ", "_") + ".pdf";
@@ -154,7 +166,6 @@ public class QuizController {
                     LocalDate.now()
             );
 
-            // ✅ Envoyer notification à l'enseignant
             String message = etudiant.getPrenom() + " " + etudiant.getNom()
                     + " a réussi le quiz du cours : " + cours.getTitre();
             notificationService.envoyerNotification(cours.getEnseignant(), message);
@@ -166,5 +177,4 @@ public class QuizController {
         model.addAttribute("cours", cours);
         return "resultat-quiz";
     }
-
 }

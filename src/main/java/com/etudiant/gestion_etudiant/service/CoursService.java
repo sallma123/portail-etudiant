@@ -3,6 +3,7 @@ package com.etudiant.gestion_etudiant.service;
 import com.etudiant.gestion_etudiant.entity.Cours;
 import com.etudiant.gestion_etudiant.entity.Support;
 import com.etudiant.gestion_etudiant.entity.User;
+import com.etudiant.gestion_etudiant.entity.Inscription;
 import com.etudiant.gestion_etudiant.repository.CoursRepository;
 import com.etudiant.gestion_etudiant.repository.InscriptionRepository;
 import com.etudiant.gestion_etudiant.repository.SupportRepository;
@@ -23,9 +24,12 @@ public class CoursService {
 
     @Autowired
     private SupportRepository supportRepository;
+
     @Autowired
     private InscriptionRepository inscriptionRepository;
 
+    @Autowired
+    private ForumService forumService;
 
     // Ajouter un cours
     public Cours ajouterCours(Cours cours, User enseignant) {
@@ -36,16 +40,12 @@ public class CoursService {
 
     // Modifier un cours
     public Cours modifierCours(Long id, Cours coursModifie) {
-        Optional<Cours> coursOpt = coursRepository.findById(id);
-        if (coursOpt.isPresent()) {
-            Cours cours = coursOpt.get();
+        return coursRepository.findById(id).map(cours -> {
             cours.setTitre(coursModifie.getTitre());
             cours.setDescription(coursModifie.getDescription());
             cours.setCategorie(coursModifie.getCategorie());
             return coursRepository.save(cours);
-        } else {
-            throw new RuntimeException("Cours introuvable");
-        }
+        }).orElseThrow(() -> new RuntimeException("Cours introuvable"));
     }
 
     // Supprimer un cours et ses supports
@@ -56,7 +56,7 @@ public class CoursService {
             Cours cours = coursOpt.get();
             List<Support> supports = supportRepository.findByCours(cours);
 
-            // Supprimer les fichiers physiques associés (PDF, vidéos, etc.)
+            // Supprimer les fichiers physiques
             for (Support support : supports) {
                 String cheminFichier = support.getLien().replace("/fichiers/", "uploads/");
                 File fichier = new File(cheminFichier);
@@ -65,17 +65,14 @@ public class CoursService {
                 }
             }
 
-            // Supprimer les supports de la base
             supportRepository.deleteAll(supports);
-
-            // Supprimer le cours
             coursRepository.delete(cours);
         } else {
             throw new RuntimeException("Cours introuvable");
         }
     }
 
-    // Récupérer tous les cours d’un enseignant
+    // Récupérer les cours d’un enseignant
     public List<Cours> getCoursParEnseignant(User enseignant) {
         return coursRepository.findByEnseignant(enseignant);
     }
@@ -85,12 +82,12 @@ public class CoursService {
         return coursRepository.findById(id);
     }
 
-    // 🔢 Nombre total de cours (admin)
+    // Nombre total de cours (admin)
     public long count() {
         return coursRepository.count();
     }
 
-    // 📊 Statistiques globales (admin)
+    // Statistiques globales pour admin
     public List<Map<String, Object>> findAllWithStats() {
         List<Cours> coursList = coursRepository.findAll();
         List<Map<String, Object>> stats = new ArrayList<>();
@@ -107,17 +104,19 @@ public class CoursService {
         return stats;
     }
 
-    // 🔢 Nombre d'étudiants par enseignant (factice)
+    // Nombre d'étudiants par enseignant
     public int countEtudiantsParEnseignant(User enseignant) {
-        return 0; // à remplacer par une vraie logique avec inscriptions
+        return coursRepository.findByEnseignant(enseignant).stream()
+                .mapToInt(cours -> inscriptionRepository.countByCours(cours)).sum();
     }
 
-    // 🔢 Nombre de certificats délivrés (factice)
+    // Nombre de certificats par enseignant
     public int countCertificatsParEnseignant(User enseignant) {
-        return 0; // à remplacer par une vraie logique avec certificats
+        return coursRepository.findByEnseignant(enseignant).stream()
+                .mapToInt(cours -> inscriptionRepository.countByCoursAndCertificatObtenuTrue(cours)).sum();
     }
 
-    // 📈 Statistiques par cours (enseignant)
+    // Statistiques par cours pour enseignant
     public List<Map<String, Object>> getStatistiquesParCours(User enseignant) {
         List<Cours> coursList = coursRepository.findByEnseignant(enseignant);
         List<Map<String, Object>> stats = new ArrayList<>();
@@ -125,19 +124,26 @@ public class CoursService {
         for (Cours cours : coursList) {
             Map<String, Object> stat = new HashMap<>();
             stat.put("nomCours", cours.getTitre());
-            stat.put("nbEtudiants", 0); // À remplacer par vraie logique
-            stat.put("moyenne", "14.2 / 20"); // Exemple statique
-            stat.put("tauxReussite", 68); // Pour test
-            stat.put("nbCommentaires", 12); // Exemple statique
+            stat.put("nbEtudiants", inscriptionRepository.countByCours(cours));
+            stat.put("moyenne", "14.2 / 20"); // peut être calculée si tu as les notes
+            stat.put("tauxReussite", 68); // à améliorer si besoin
+            stat.put("nbCommentaires", forumService.getMessagesParCours(cours).size());
             stats.add(stat);
         }
         return stats;
     }
 
-    // 📋 Cours de l'étudiant avec statistiques
+    // Cours de l'étudiant avec stats
     public List<Map<String, Object>> getCoursEtudiantAvecStats(User etudiant) {
-        List<Map<String, Object>> coursEtudiant = new ArrayList<>();
-        // À implémenter avec les vraies données d’inscriptions
-        return coursEtudiant;
+        return inscriptionRepository.findByEtudiant(etudiant).stream().map(inscription -> {
+            Map<String, Object> map = new HashMap<>();
+            Cours cours = inscription.getCours();
+            map.put("nom", cours.getTitre());
+            map.put("note", inscription.getNote() != null ? inscription.getNote() : "N/A");
+            map.put("certificat", inscription.isCertificatObtenu());
+            map.put("progression", inscription.getProgression());
+            map.put("nbCommentaires", forumService.getMessagesParCours(cours).size());
+            return map;
+        }).collect(Collectors.toList());
     }
 }

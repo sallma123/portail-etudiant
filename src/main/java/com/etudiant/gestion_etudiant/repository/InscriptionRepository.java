@@ -9,10 +9,19 @@ import java.util.List;
 import java.util.Optional;
 
 public interface InscriptionRepository extends JpaRepository<Inscription, Long> {
+
     List<Inscription> findByEtudiant(User etudiant);
+
     boolean existsByEtudiantAndCours(User etudiant, Cours cours);
+
     Optional<Inscription> findByEtudiantAndCours(User etudiant, Cours cours);
+
     List<Inscription> findByCours(Cours cours);
+
     int countByCours(Cours cours);
+
+    // Compter les certificats obtenus pour un cours
+    int countByCoursAndCertificatObtenuTrue(Cours cours);
+    int countByEtudiantAndCertificatObtenuTrue(User etudiant);
 
 }
