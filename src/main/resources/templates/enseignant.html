@@ -3,12 +3,9 @@
       th:replace="layout-dashboard :: layout(~{::section})"
       th:with="pageTitle='Dashboard Enseignant', pageContent=~{::section}">
 
-<section>
+<section style="background-color: #f8f9fa; padding: 2rem; border-radius: 1rem;">
+
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', sans-serif;
-        }
         .card-purple {
             background: linear-gradient(to right, #667eea, #764ba2);
             color: white;
@@ -38,70 +35,67 @@
         }
     </style>
 
-    <div class="container my-5">
-
-        <!-- Cartes Résumé -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="card-purple stat-card">
-                    <div class="stat-icon"><i class="bi bi-journal-text"></i></div>
-                    <h6>Cours créés</h6>
-                    <h3 class="fw-bold" th:text="${coursCount}">3</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card-purple stat-card" style="background-color: #28a745;">
-                    <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-                    <h6>Étudiants inscrits</h6>
-                    <h3 class="fw-bold" th:text="${totalEtudiants}">56</h3>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card-purple stat-card" style="background-color: #0dcaf0;">
-                    <div class="stat-icon"><i class="bi bi-award-fill"></i></div>
-                    <h6>Certificats délivrés</h6>
-                    <h3 class="fw-bold" th:text="${certificatsDélivrés}">34</h3>
-                </div>
+    <!-- ✅ Cartes Résumé -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card-purple stat-card">
+                <div class="stat-icon"><i class="bi bi-journal-text"></i></div>
+                <h6>Cours créés</h6>
+                <h3 class="fw-bold" th:text="${coursCount}">3</h3>
             </div>
         </div>
-
-        <!-- Bloc Tableau moderne -->
-        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-            <div class="d-flex justify-content-between align-items-center px-4 py-3"
-                 style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
-                <div class="fw-bold"><i class="bi bi-table me-2"></i>Statistiques par cours</div>
-                <a href="/enseignant/mes-cours" class="btn btn-sm btn-light text-dark fw-semibold">Voir mes cours</a>
-            </div>
-
-            <div class="table-responsive p-4 pt-3">
-                <table class="table align-middle mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>Cours</th>
-                        <th>Inscrits</th>
-                        <th>Moyenne</th>
-                        <th>Taux de réussite</th>
-                        <th>Commentaires</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="stat : ${statistiquesCours}">
-                        <td th:text="${stat.nomCours}">Spring Boot</td>
-                        <td th:text="${stat.nbEtudiants}">22</td>
-                        <td><strong th:text="${stat.moyenne}">14.2 / 20</strong></td>
-                        <td>
-              <span class="badge bg-success" th:if="${stat.tauxReussite} >= 60"
-                    th:text="${stat.tauxReussite + '%'}">68%</span>
-                            <span class="badge bg-warning text-dark" th:if="${stat.tauxReussite} &lt; 60"
-                                  th:text="${stat.tauxReussite + '%'}">59%</span>
-                        </td>
-                        <td th:text="${stat.nbCommentaires}">12</td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div class="col-md-4">
+            <div class="card-purple stat-card bg-success">
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+                <h6>Étudiants inscrits</h6>
+                <h3 class="fw-bold" th:text="${totalEtudiants}">56</h3>
             </div>
         </div>
-
+        <div class="col-md-4">
+            <div class="card-purple stat-card bg-info">
+                <div class="stat-icon"><i class="bi bi-award-fill"></i></div>
+                <h6>Certificats délivrés</h6>
+                <h3 class="fw-bold" th:text="${certificatsDélivrés}">34</h3>
+            </div>
+        </div>
     </div>
+
+    <!-- ✅ Tableau Statistiques -->
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+        <div class="d-flex justify-content-between align-items-center px-4 py-3"
+             style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
+            <div class="fw-bold"><i class="bi bi-table me-2"></i>Statistiques par cours</div>
+            <a href="/enseignant/mes-cours" class="btn btn-sm btn-light text-dark fw-semibold">Voir mes cours</a>
+        </div>
+
+        <div class="table-responsive p-4 pt-3">
+            <table class="table align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>Cours</th>
+                    <th>Inscrits</th>
+                    <th>Moyenne</th>
+                    <th>Taux de réussite</th>
+                    <th>Commentaires</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="stat : ${statistiquesCours}">
+                    <td th:text="${stat.nomCours}">Spring Boot</td>
+                    <td th:text="${stat.nbEtudiants}">22</td>
+                    <td><strong th:text="${stat.moyenne}">14.2 / 20</strong></td>
+                    <td>
+                        <span class="badge bg-success" th:if="${stat.tauxReussite} >= 60"
+                              th:text="${stat.tauxReussite + '%'}">68%</span>
+                        <span class="badge bg-warning text-dark" th:if="${stat.tauxReussite} &lt; 60"
+                              th:text="${stat.tauxReussite + '%'}">59%</span>
+                    </td>
+                    <td th:text="${stat.nbCommentaires}">12</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </section>
 </html>
