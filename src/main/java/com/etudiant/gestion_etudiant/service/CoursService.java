@@ -1,5 +1,6 @@
 package com.etudiant.gestion_etudiant.service;
 
+import com.etudiant.gestion_etudiant.dto.StatistiqueCours;
 import com.etudiant.gestion_etudiant.entity.Cours;
 import com.etudiant.gestion_etudiant.entity.Support;
 import com.etudiant.gestion_etudiant.entity.User;
@@ -56,7 +57,6 @@ public class CoursService {
             Cours cours = coursOpt.get();
             List<Support> supports = supportRepository.findByCours(cours);
 
-            // Supprimer les fichiers physiques
             for (Support support : supports) {
                 String cheminFichier = support.getLien().replace("/fichiers/", "uploads/");
                 File fichier = new File(cheminFichier);
@@ -116,20 +116,39 @@ public class CoursService {
                 .mapToInt(cours -> inscriptionRepository.countByCoursAndCertificatObtenuTrue(cours)).sum();
     }
 
-    // Statistiques par cours pour enseignant
-    public List<Map<String, Object>> getStatistiquesParCours(User enseignant) {
+    // ✅ Statistiques par cours pour enseignant (version finale avec moyenne, réussite, commentaires)
+    public List<StatistiqueCours> getStatistiquesParCours(User enseignant) {
         List<Cours> coursList = coursRepository.findByEnseignant(enseignant);
-        List<Map<String, Object>> stats = new ArrayList<>();
+        List<StatistiqueCours> stats = new ArrayList<>();
 
         for (Cours cours : coursList) {
-            Map<String, Object> stat = new HashMap<>();
-            stat.put("nomCours", cours.getTitre());
-            stat.put("nbEtudiants", inscriptionRepository.countByCours(cours));
-            stat.put("moyenne", "14.2 / 20"); // peut être calculée si tu as les notes
-            stat.put("tauxReussite", 68); // à améliorer si besoin
-            stat.put("nbCommentaires", forumService.getMessagesParCours(cours).size());
-            stats.add(stat);
+            List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
+
+            int nbEtudiants = inscriptions.size();
+            int nbCertificats = (int) inscriptions.stream().filter(Inscription::isCertificatObtenu).count();
+            int nbCommentaires = forumService.getMessagesParCours(cours).size();
+
+            // Calcul moyenne des notes
+            double moyenne = inscriptions.stream()
+                    .filter(i -> i.getNote() != null)
+                    .mapToDouble(Inscription::getNote)
+                    .average()
+                    .orElse(0.0);
+            String moyenneStr = String.format("%.1f %%", moyenne);
+
+            // Taux de réussite = % étudiants avec certificat
+            int tauxReussite = nbEtudiants == 0 ? 0 : (nbCertificats * 100 / nbEtudiants);
+
+            stats.add(new StatistiqueCours(
+                    cours.getTitre(),
+                    nbEtudiants,
+                    nbCertificats,
+                    moyenneStr,
+                    tauxReussite,
+                    nbCommentaires
+            ));
         }
+
         return stats;
     }
 
