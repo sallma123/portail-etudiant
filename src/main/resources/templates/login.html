@@ -13,6 +13,7 @@
             align-items: center;
             font-family: 'Segoe UI', sans-serif;
         }
+
         .card {
             padding: 2rem;
             border-radius: 1rem;
@@ -20,24 +21,29 @@
             width: 100%;
             max-width: 400px;
         }
+
         .btn-primary {
             background-color: #764ba2;
             border: none;
         }
+
         .btn-primary:hover {
             background-color: #5e3b89;
         }
+
         .error {
             color: red;
             font-size: 0.9rem;
             margin-top: 1rem;
         }
+
         .forgot-password {
             margin-top: 1rem;
             text-align: center;
         }
+
         .forgot-password a {
-            color: #ffffff;
+            color: #764ba2;
             text-decoration: underline;
             font-size: 0.9rem;
         }
@@ -48,7 +54,7 @@
 <div class="card">
     <h3 class="text-center mb-4">Connexion</h3>
 
-    <!-- ✅ Message succès après réinitialisation -->
+    <!-- ✅ Message de succès après réinitialisation -->
     <div th:if="${message}" class="alert alert-success text-center mb-3" role="alert" th:text="${message}"></div>
 
     <form th:action="@{/auth/login-page}" method="post">
@@ -64,21 +70,16 @@
 
         <button type="submit" class="btn btn-primary w-100">Se connecter</button>
 
-        <!-- 🔴 Erreur identifiants -->
+        <!-- 🔴 Affichage des erreurs -->
         <div th:if="${error}" class="error text-center">
             <p th:text="${error}">Identifiants invalides !</p>
         </div>
 
+        <!-- 🔁 Lien unique vers la réinitialisation -->
         <div class="forgot-password">
-            <a href="/forgot-password">Mot de passe oublié ?</a>
+            <a th:href="@{/forgot-password}">Mot de passe oublié ?</a>
         </div>
     </form>
-
-    <div class="text-center mt-3">
-        <a href="/forgot-password" style="font-size: 0.9rem; color: #764ba2; text-decoration: underline;">
-            Mot de passe oublié ?
-        </a>
-    </div>
 </div>
 
 </body>
