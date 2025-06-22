@@ -7,7 +7,6 @@ import com.etudiant.gestion_etudiant.repository.UserRepository;
 import com.etudiant.gestion_etudiant.service.CoursService;
 import com.etudiant.gestion_etudiant.service.SupportService;
 import com.etudiant.gestion_etudiant.service.UserService;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.List;
 import java.util.Optional;
 
 @Controller
@@ -41,14 +39,13 @@ public class PageController {
         this.supportService = supportService;
     }
 
-    // 🔐 Login
+    // Login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
                             Model model) {
         if (error != null) {
-            model.addAttribute("error", error.equals("unauthorized")
-                    ? "Accès non autorisé." : "Identifiants invalides !");
+            model.addAttribute("error", error.equals("unauthorized") ? "Accès non autorisé." : "Identifiants invalides !");
         }
         if (resetSuccess != null) {
             model.addAttribute("message", "Votre mot de passe a été réinitialisé avec succès.");
@@ -56,15 +53,29 @@ public class PageController {
         return "login";
     }
 
-    // 👤 Dashboards
+    // Dashboards
     @GetMapping("/enseignant/dashboard")
-    public String enseignantDashboard(Authentication auth) {
-        return hasRole(auth, "ROLE_ENSEIGNANT") ? "enseignant" : "redirect:/login?error=unauthorized";
+    public String enseignantDashboard(Authentication auth, Model model,
+                                      @AuthenticationPrincipal(expression = "username") String email) {
+        if (!hasRole(auth, "ROLE_ENSEIGNANT")) return "redirect:/login?error=unauthorized";
+        User enseignant = userService.findByEmail(email);
+        model.addAttribute("coursCount", coursService.getCoursParEnseignant(enseignant).size());
+        model.addAttribute("totalEtudiants", coursService.countEtudiantsParEnseignant(enseignant));
+        model.addAttribute("certificatsDélivrés", coursService.countCertificatsParEnseignant(enseignant));
+        model.addAttribute("statistiquesCours", coursService.getStatistiquesParCours(enseignant));
+        return "enseignant";
     }
 
     @GetMapping("/etudiant/dashboard")
-    public String etudiantDashboard(Authentication auth) {
-        return hasRole(auth, "ROLE_ETUDIANT") ? "etudiant" : "redirect:/login?error=unauthorized";
+    public String etudiantDashboard(Authentication auth, Model model,
+                                    @AuthenticationPrincipal(expression = "username") String email) {
+        if (!hasRole(auth, "ROLE_ETUDIANT")) return "redirect:/login?error=unauthorized";
+        User etudiant = userService.findByEmail(email);
+        model.addAttribute("coursInscrits", userService.countCoursInscrits(etudiant));
+        model.addAttribute("certificatsObtenus", userService.countCertificatsObtenus(etudiant));
+        model.addAttribute("progressionMoyenne", userService.getProgressionMoyenne(etudiant));
+        model.addAttribute("coursEtudiant", coursService.getCoursEtudiantAvecStats(etudiant));
+        return "etudiant";
     }
 
     @GetMapping("/admin/dashboard")
@@ -72,17 +83,18 @@ public class PageController {
         if (hasRole(auth, "ROLE_ADMIN")) {
             model.addAttribute("nbEtudiants", userRepo.countByRole_Name("ROLE_ETUDIANT"));
             model.addAttribute("nbEnseignants", userRepo.countByRole_Name("ROLE_ENSEIGNANT"));
+            model.addAttribute("nbCours", coursService.count());
+            model.addAttribute("coursList", coursService.findAllWithStats());
             return "admin-dashboard";
         }
         return "redirect:/login?error=unauthorized";
     }
 
     private boolean hasRole(Authentication auth, String role) {
-        return auth != null && auth.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals(role));
+        return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(role));
     }
 
-    // 📚 Liste des cours
+    // Liste des cours
     @GetMapping("/enseignant/mes-cours")
     public String afficherMesCours(Model model,
                                    @AuthenticationPrincipal(expression = "username") String email) {
@@ -91,8 +103,7 @@ public class PageController {
         return "mes-cours";
     }
 
-
-    // 📄 Liste des supports d’un cours
+    // Liste des supports d’un cours
     @GetMapping("/enseignant/cours/{id}/supports")
     public String afficherListeSupports(@PathVariable Long id, Model model) {
         return coursService.getCoursParId(id).map(cours -> {
@@ -102,7 +113,7 @@ public class PageController {
         }).orElse("redirect:/enseignant/mes-cours");
     }
 
-    // 📁 Ajouter un support
+    // Ajouter un support
     @GetMapping("/enseignant/cours/{id}/ajouter-support")
     public String afficherFormulaireSupport(@PathVariable Long id, Model model) {
         return coursService.getCoursParId(id).map(cours -> {
@@ -142,26 +153,23 @@ public class PageController {
         return "redirect:/enseignant/cours/" + id + "/supports";
     }
 
-    // 🗑 Supprimer un support (et rester sur la page des supports)
+    // Supprimer un support
     @PostMapping("/enseignant/support/{id}/supprimer")
     public String supprimerSupport(@PathVariable Long id) {
         Optional<Support> supportOpt = supportService.getSupportParId(id);
         if (supportOpt.isPresent()) {
             Long coursId = supportOpt.get().getCours().getId();
-
-            // Supprimer le fichier
-            String lien = supportOpt.get().getLien(); // ex: /fichiers/nom.pdf
+            String lien = supportOpt.get().getLien();
             String nomFichier = lien.substring(lien.lastIndexOf("/") + 1);
             File fichier = new File(System.getProperty("user.dir") + "/uploads/" + nomFichier);
             if (fichier.exists()) fichier.delete();
-
             supportService.supprimerSupport(id);
             return "redirect:/enseignant/cours/" + coursId + "/supports";
         }
         return "redirect:/enseignant/mes-cours";
     }
 
-    // 🗑 Supprimer un cours + ses supports
+    // Supprimer un cours + ses supports
     @GetMapping("/enseignant/cours/{id}/supprimer")
     public String supprimerCours(@PathVariable Long id) {
         coursService.supprimerCoursEtSupports(id);

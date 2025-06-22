@@ -13,5 +13,6 @@ public interface InscriptionRepository extends JpaRepository<Inscription, Long> 
     boolean existsByEtudiantAndCours(User etudiant, Cours cours);
     Optional<Inscription> findByEtudiantAndCours(User etudiant, Cours cours);
     List<Inscription> findByCours(Cours cours);
+    int countByCours(Cours cours);
 
 }

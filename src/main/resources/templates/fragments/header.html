@@ -1,4 +1,11 @@
 <div th:fragment="customHeader">
+    <style>
+        nav.navbar {
+            border-bottom-left-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+    </style>
+
     <nav class="navbar navbar-expand-lg px-4 py-2"
          style="background: linear-gradient(to right, #667eea, #764ba2); color: white;">
         <div class="container-fluid justify-content-between align-items-center">
@@ -39,7 +46,6 @@
                                 <div class="text-muted small"
                                      th:text="${#temporals.format(notif.date, 'dd/MM/yyyy HH:mm')}">Date</div>
                             </div>
-
                         </li>
                         <li th:if="${notifications.size() == 0}">
                             <div class="dropdown-item text-center text-muted">Aucune notification</div>
