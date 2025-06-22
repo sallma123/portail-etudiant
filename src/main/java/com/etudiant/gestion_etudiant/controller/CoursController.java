@@ -46,7 +46,7 @@ public class CoursController {
     // ✅ Supprimer un cours via API
     @DeleteMapping("/{id}")
     public void supprimerCours(@PathVariable Long id) {
-        coursService.supprimerCoursEtSupports(id);
+        coursService.supprimerCours(id);
     }
 
     // ✅ Ajouter un support
@@ -70,4 +70,5 @@ public class CoursController {
             throw new RuntimeException("Cours non trouvé");
         }
     }
+
 }

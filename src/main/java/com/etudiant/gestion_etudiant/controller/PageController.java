@@ -172,7 +172,7 @@ public class PageController {
     // Supprimer un cours + ses supports
     @GetMapping("/enseignant/cours/{id}/supprimer")
     public String supprimerCours(@PathVariable Long id) {
-        coursService.supprimerCoursEtSupports(id);
+        coursService.supprimerCours(id);
         return "redirect:/enseignant/mes-cours";
     }
 }

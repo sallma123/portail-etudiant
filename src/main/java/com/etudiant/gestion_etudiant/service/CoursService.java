@@ -1,13 +1,9 @@
 package com.etudiant.gestion_etudiant.service;
 
 import com.etudiant.gestion_etudiant.dto.StatistiqueCours;
-import com.etudiant.gestion_etudiant.entity.Cours;
-import com.etudiant.gestion_etudiant.entity.Support;
-import com.etudiant.gestion_etudiant.entity.User;
-import com.etudiant.gestion_etudiant.entity.Inscription;
-import com.etudiant.gestion_etudiant.repository.CoursRepository;
-import com.etudiant.gestion_etudiant.repository.InscriptionRepository;
-import com.etudiant.gestion_etudiant.repository.SupportRepository;
+import com.etudiant.gestion_etudiant.entity.*;
+import com.etudiant.gestion_etudiant.repository.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,26 +16,21 @@ import java.util.stream.Collectors;
 @Service
 public class CoursService {
 
-    @Autowired
-    private CoursRepository coursRepository;
+    @Autowired private CoursRepository coursRepository;
+    @Autowired private SupportRepository supportRepository;
+    @Autowired private InscriptionRepository inscriptionRepository;
+    @Autowired private ForumService forumService;
+    @Autowired private InscriptionService inscriptionService;
+    @Autowired private QuizRepository quizRepository;
 
-    @Autowired
-    private SupportRepository supportRepository;
-
-    @Autowired
-    private InscriptionRepository inscriptionRepository;
-
-    @Autowired
-    private ForumService forumService;
-
-    // Ajouter un cours
+    // ✅ Ajouter un cours
     public Cours ajouterCours(Cours cours, User enseignant) {
         cours.setDateCreation(LocalDate.now());
         cours.setEnseignant(enseignant);
         return coursRepository.save(cours);
     }
 
-    // Modifier un cours
+    // ✅ Modifier un cours
     public Cours modifierCours(Long id, Cours coursModifie) {
         return coursRepository.findById(id).map(cours -> {
             cours.setTitre(coursModifie.getTitre());
@@ -49,14 +40,15 @@ public class CoursService {
         }).orElseThrow(() -> new RuntimeException("Cours introuvable"));
     }
 
-    // Supprimer un cours et ses supports
+    // ✅ Supprimer un cours avec tous ses éléments liés
     @Transactional
-    public void supprimerCoursEtSupports(Long id) {
+    public void supprimerCours(Long id) {
         Optional<Cours> coursOpt = coursRepository.findById(id);
         if (coursOpt.isPresent()) {
             Cours cours = coursOpt.get();
-            List<Support> supports = supportRepository.findByCours(cours);
 
+            // 1. Supprimer les fichiers physiques des supports
+            List<Support> supports = supportRepository.findByCours(cours);
             for (Support support : supports) {
                 String cheminFichier = support.getLien().replace("/fichiers/", "uploads/");
                 File fichier = new File(cheminFichier);
@@ -65,29 +57,40 @@ public class CoursService {
                 }
             }
 
+            // 2. Supprimer les inscriptions
+            List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
+            inscriptionRepository.deleteAll(inscriptions);
+
+            // 3. Supprimer les messages de forum liés
+            forumService.supprimerMessagesParCours(cours);
+
+            // 4. Supprimer le quiz associé s’il existe
+            if (cours.getQuiz() != null) {
+                quizRepository.delete(cours.getQuiz());
+            }
+
+            // 5. Supprimer les supports (en base)
             supportRepository.deleteAll(supports);
+
+            // 6. Supprimer le cours lui-même
             coursRepository.delete(cours);
         } else {
             throw new RuntimeException("Cours introuvable");
         }
     }
 
-    // Récupérer les cours d’un enseignant
     public List<Cours> getCoursParEnseignant(User enseignant) {
         return coursRepository.findByEnseignant(enseignant);
     }
 
-    // Récupérer un cours par ID
     public Optional<Cours> getCoursParId(Long id) {
         return coursRepository.findById(id);
     }
 
-    // Nombre total de cours (admin)
     public long count() {
         return coursRepository.count();
     }
 
-    // Statistiques globales pour admin
     public List<Map<String, Object>> findAllWithStats() {
         List<Cours> coursList = coursRepository.findAll();
         List<Map<String, Object>> stats = new ArrayList<>();
@@ -104,31 +107,26 @@ public class CoursService {
         return stats;
     }
 
-    // Nombre d'étudiants par enseignant
     public int countEtudiantsParEnseignant(User enseignant) {
         return coursRepository.findByEnseignant(enseignant).stream()
-                .mapToInt(cours -> inscriptionRepository.countByCours(cours)).sum();
+                .mapToInt(c -> inscriptionRepository.countByCours(c)).sum();
     }
 
-    // Nombre de certificats par enseignant
     public int countCertificatsParEnseignant(User enseignant) {
         return coursRepository.findByEnseignant(enseignant).stream()
-                .mapToInt(cours -> inscriptionRepository.countByCoursAndCertificatObtenuTrue(cours)).sum();
+                .mapToInt(c -> inscriptionRepository.countByCoursAndCertificatObtenuTrue(c)).sum();
     }
 
-    // ✅ Statistiques par cours pour enseignant (version finale avec moyenne, réussite, commentaires)
     public List<StatistiqueCours> getStatistiquesParCours(User enseignant) {
         List<Cours> coursList = coursRepository.findByEnseignant(enseignant);
         List<StatistiqueCours> stats = new ArrayList<>();
 
         for (Cours cours : coursList) {
             List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
-
             int nbEtudiants = inscriptions.size();
             int nbCertificats = (int) inscriptions.stream().filter(Inscription::isCertificatObtenu).count();
             int nbCommentaires = forumService.getMessagesParCours(cours).size();
 
-            // Calcul moyenne des notes
             double moyenne = inscriptions.stream()
                     .filter(i -> i.getNote() != null)
                     .mapToDouble(Inscription::getNote)
@@ -136,7 +134,6 @@ public class CoursService {
                     .orElse(0.0);
             String moyenneStr = String.format("%.1f %%", moyenne);
 
-            // Taux de réussite = % étudiants avec certificat
             int tauxReussite = nbEtudiants == 0 ? 0 : (nbCertificats * 100 / nbEtudiants);
 
             stats.add(new StatistiqueCours(
@@ -152,7 +149,6 @@ public class CoursService {
         return stats;
     }
 
-    // Cours de l'étudiant avec stats
     public List<Map<String, Object>> getCoursEtudiantAvecStats(User etudiant) {
         return inscriptionRepository.findByEtudiant(etudiant).stream().map(inscription -> {
             Map<String, Object> map = new HashMap<>();

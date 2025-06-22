@@ -28,6 +28,8 @@ public class ForumService {
         message.setDate(LocalDateTime.now());
         messageForumRepository.save(message);
     }
+
+    // ✅ Supprimer un message par son auteur (utilisé dans l'interface utilisateur)
     public void supprimerMessage(Long id, User userConnecte) {
         MessageForum msg = messageForumRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Message introuvable"));
@@ -39,4 +41,16 @@ public class ForumService {
         messageForumRepository.delete(msg);
     }
 
+    // ✅ Supprimer un message (utilisé en interne par l'admin ou pour suppression du cours)
+    public void supprimerMessageSansVérif(Long id) {
+        messageForumRepository.findById(id).ifPresent(messageForumRepository::delete);
+    }
+
+    // ✅ Supprimer tous les messages associés à un cours (appelé lors de suppression de cours)
+    public void supprimerMessagesParCours(Cours cours) {
+        List<MessageForum> messages = getMessagesParCours(cours);
+        for (MessageForum msg : messages) {
+            supprimerMessageSansVérif(msg.getId());
+        }
+    }
 }

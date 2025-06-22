@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface SupportVuRepository extends JpaRepository<SupportVu, Long> {
     boolean existsByEtudiantAndSupport(User etudiant, Support support);
     long countByEtudiantAndSupport_Cours(User etudiant, Cours cours);
+    void deleteBySupport(Support support);
+
 }
