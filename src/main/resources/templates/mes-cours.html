@@ -1,69 +1,104 @@
-<!-- templates/enseignant-cours.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="layout :: layout(~{::section})"
+      th:replace="layout-dashboard :: layout(~{::section})"
       th:with="pageTitle='Mes cours', pageContent=~{::section}">
 
-<section>
-    <h2 class="mb-4 text-center">
-        <i class="bi bi-journal-bookmark-fill me-2"></i>Mes cours
+<section style="background: #f5f7fb; padding: 1.5rem 2rem 3rem 2rem; border-radius: 1rem;">
+    <style>
+        .btn-purple {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-purple:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 2rem;
+        }
+
+        /* ✅ appliquer le dégradé à toute la ligne */
+        thead tr {
+            background: linear-gradient(to right, #667eea, #764ba2) !important;
+        }
+
+        thead tr th {
+            color: white !important;
+            border: none !important;
+            background: transparent !important;
+        }
+
+        h2 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2rem;
+            margin-top: 0 !important; /* empêche l'espace au-dessus */
+        }
+
+        h2 i {
+            color: #764ba2;
+        }
+
+        .action-btns .btn {
+            border-radius: 10px;
+            font-size: 0.875rem;
+        }
+    </style>
+
+    <h2 class="text-center">
+        Mes cours
     </h2>
 
-    <div class="d-flex justify-content-end mb-3">
-        <a href="/enseignant/ajouter-cours" class="btn btn-purple">
-            <i class="bi bi-plus-circle-fill me-1"></i>Ajouter un nouveau cours
+    <div class="d-flex justify-content-end mb-4">
+        <a href="/enseignant/ajouter-cours" class="btn btn-purple px-4 py-2">
+            <i class="bi bi-plus-circle-fill me-2"></i>Ajouter un cours
         </a>
     </div>
 
-    <div class="card-custom">
-        <table class="table table-bordered table-hover text-center align-middle">
-            <thead class="table-light">
+    <div class="glass-card">
+        <table class="table table-hover align-middle text-center">
+            <thead>
             <tr>
                 <th>Titre</th>
                 <th>Description</th>
                 <th>Catégorie</th>
-                <th>Date de création</th>
+                <th>Date</th>
                 <th>Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="cours : ${coursList}">
-                <td th:text="${cours.titre}"></td>
-                <td th:text="${cours.description}"></td>
-                <td th:text="${cours.categorie}"></td>
-                <td th:text="${cours.dateCreation}"></td>
-                <td class="d-flex flex-wrap gap-1 justify-content-center">
-
-                    <!-- 📁 Gérer supports -->
-                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}"
-                       class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-folder-fill me-1"></i>Gérer supports
+                <td th:text="${cours.titre}">Java Web</td>
+                <td th:text="${cours.description}">Description</td>
+                <td th:text="${cours.categorie}">Programmation</td>
+                <td th:text="${cours.dateCreation}">2024-06-22</td>
+                <td class="d-flex flex-wrap gap-2 justify-content-center action-btns">
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supports'}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-folder-fill me-1"></i>Supports
                     </a>
-
-                    <!-- 📝 Créer ou Supprimer quiz -->
-                    <div th:if="${cours.quiz == null}">
-                        <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/creer-quiz'}"
-                           class="btn btn-sm btn-outline-success">
-                            <i class="bi bi-pencil-square me-1"></i>Créer quiz
-                        </a>
-                    </div>
-                    <div th:if="${cours.quiz != null}">
-                        <form th:action="@{'/enseignant/quiz/' + ${cours.quiz.id} + '/supprimer'}"
-                              method="post"
-                              onsubmit="return confirm('Voulez-vous vraiment supprimer ce quiz ?');">
-                            <button type="submit" class="btn btn-sm btn-outline-warning">
-                                <i class="bi bi-trash3-fill me-1"></i>Supprimer quiz
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- ❌ Supprimer cours -->
-                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}"
-                       class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce cours ?');">
+                    <a th:if="${cours.quiz == null}" th:href="@{'/enseignant/cours/' + ${cours.id} + '/creer-quiz'}" class="btn btn-sm btn-outline-success">
+                        <i class="bi bi-pencil-square me-1"></i>Quiz
+                    </a>
+                    <form th:if="${cours.quiz != null}" th:action="@{'/enseignant/quiz/' + ${cours.quiz.id} + '/supprimer'}" method="post"
+                          onsubmit="return confirm('Supprimer ce quiz ?');">
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-trash3-fill me-1"></i>Quiz
+                        </button>
+                    </form>
+                    <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/supprimer'}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Supprimer ce cours ?');">
                         <i class="bi bi-trash-fill me-1"></i>Supprimer
                     </a>
-
                 </td>
             </tr>
             </tbody>
