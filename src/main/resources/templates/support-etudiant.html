@@ -1,41 +1,73 @@
-<!-- templates/support-etudiant.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="layout :: layout(~{::section})"
+      th:replace="layout-dashboard :: layout(~{::section})"
       th:with="pageTitle='Supports du cours', pageContent=~{::section}">
 
-<section>
+<section style="background-color: #f8f9fa; padding: 2rem; border-radius: 1rem;">
+    <style>
+        .card-section {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .btn-purple {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+        .btn-purple:hover {
+            background: #5a67d8;
+        }
+        .support-item {
+            border-bottom: 1px solid #eee;
+            padding: 1rem 0;
+        }
+        .support-item:last-child {
+            border-bottom: none;
+        }
+        .forum-message {
+            background-color: #fff;
+            border-left: 5px solid #764ba2;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .forum-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+    </style>
 
+    <!-- Titre + bouton retour -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h3><i class="bi bi-folder-fill me-2"></i>Supports du cours : <span th:text="${cours.titre}"></span></h3>
         <a href="/etudiant/cours-disponibles" class="btn btn-light"><i class="bi bi-arrow-left"></i> Retour</a>
     </div>
 
-    <!-- 📁 Liste des supports -->
-    <div class="card-custom mb-4">
-        <div class="list-group list-group-flush">
-            <div class="list-group-item d-flex justify-content-between align-items-center"
-                 th:each="support : ${supports}">
-                <span th:text="${support.nomFichier}">Nom fichier</span>
-                <div class="btn-group">
-                    <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}"
-                       th:classappend="${supportsVus[support.id]} ? 'btn btn-primary btn-sm' : 'btn btn-outline-primary btn-sm'">
-                        <i class="bi" th:classappend="${supportsVus[support.id]} ? 'bi-check-circle-fill me-1' : 'bi-arrow-right-circle me-1'"></i>
-                        <span th:text="${supportsVus[support.id]} ? 'Terminé' : 'Marquer comme vu'"></span>
-                    </a>
-                    <a th:href="${support.lien}" target="_blank" class="btn btn-purple btn-sm">
-                        <i class="bi bi-file-earmark-text me-1"></i>Ouvrir
-                    </a>
-                </div>
+    <!-- Liste des supports -->
+    <div class="card-section">
+        <h5 class="mb-4"><i class="bi bi-journal-richtext me-2"></i>Liste des supports</h5>
+        <div th:each="support : ${supports}" class="support-item d-flex justify-content-between align-items-center">
+            <span th:text="${support.nomFichier}" class="fw-semibold"></span>
+            <div class="btn-group">
+                <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}"
+                   th:classappend="${supportsVus[support.id]} ? 'btn btn-success btn-sm' : 'btn btn-outline-secondary btn-sm'"
+                   th:attr="title=${supportsVus[support.id]} ? 'Support d\u00e9j\u00e0 vu' : 'Marquer comme vu'">
+                    <i class="bi" th:classappend="${supportsVus[support.id]} ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+                </a>
+                <a th:href="${support.lien}" target="_blank" class="btn btn-purple btn-sm">
+                    <i class="bi bi-file-earmark-text me-1"></i>Ouvrir
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- 🎯 Section Quiz -->
-    <div class="text-center" th:if="${!supportsNonVus} and ${quizExiste}">
-        <h5><i class="bi bi-award-fill"></i> Vous avez terminé tous les supports.</h5>
-
-        <div class="mt-3">
+    <!-- Quiz ou Certificat -->
+    <div class="card-section text-center" th:if="${!supportsNonVus} and ${quizExiste}">
+        <h5 class="mb-3 text-success"><i class="bi bi-award-fill"></i> Vous avez terminé tous les supports.</h5>
+        <div>
             <a th:if="${certificatDisponible}"
                th:href="@{'/fichiers/' + ${nomFichier}}"
                class="btn btn-success">
@@ -50,11 +82,10 @@
         </div>
     </div>
 
-    <!-- 💬 Forum de discussion -->
-    <div class="card-custom mt-5">
+    <!-- Forum de discussion -->
+    <div class="card-section">
         <h4 class="mb-3"><i class="bi bi-chat-dots-fill me-2"></i>Forum de discussion du cours</h4>
-
-        <form th:action="@{'/etudiant/cours/' + ${cours.id} + '/forum-integré'}" method="post">
+        <form th:action="@{'/etudiant/cours/' + ${cours.id} + '/forum-int\u00e9gr\u00e9'}" method="post">
             <div class="mb-3">
                 <textarea name="contenu" class="form-control" rows="3"
                           placeholder="Posez une question ou partagez un avis..." required></textarea>
@@ -66,12 +97,11 @@
 
         <hr>
 
-        <!-- 🧾 Messages du forum -->
-        <div th:each="msg : ${messages}" class="mb-3 p-3 rounded" style="background-color: #f8f9fa; color: #333;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+        <div th:each="msg : ${messages}" class="forum-message">
+            <div class="d-flex justify-content-between">
+                <div class="forum-meta">
                     <strong th:text="${msg.auteur.prenom + ' ' + msg.auteur.nom}"></strong>
-                    <small class="text-muted" th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}"></small>
+                    <span class="ms-2" th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
                 <form th:if="${msg.auteur.id == utilisateurConnecte.id}"
                       th:action="@{'/etudiant/cours/' + ${cours.id} + '/forum/' + ${msg.id} + '/supprimer'}"
