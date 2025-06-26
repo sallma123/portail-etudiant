@@ -15,7 +15,16 @@
             padding: 0;
             font-family: 'Segoe UI', sans-serif;
             color: #fff;
+            padding-top: 56px; /* ✅ espace réservé pour le header fixe */
         }
+
+        nav.navbar {
+            position: fixed;  /* ✅ header fixé */
+            top: 0;
+            width: 100%;
+            z-index: 999;
+        }
+
         .card-custom {
             background: white;
             color: #333;
@@ -23,11 +32,13 @@
             padding: 1.5rem;
             box-shadow: 0 8px 20px rgba(0,0,0,0.2);
         }
+
         .btn-purple {
             background-color: #764ba2;
             border: none;
             color: white;
         }
+
         .btn-purple:hover {
             background-color: #5e3b89;
         }
@@ -35,10 +46,10 @@
 </head>
 <body>
 
-<!-- ✅ Header global -->
+<!-- ✅ Header global (fixé grâce à CSS) -->
 <div th:replace="fragments/header :: customHeader"></div>
 
-<!-- ✅ Contenu injecté -->
+<!-- ✅ Contenu injecté juste en dessous du header -->
 <div th:insert="${content}"></div>
 
 <!-- Scripts Bootstrap -->

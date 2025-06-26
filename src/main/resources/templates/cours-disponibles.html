@@ -70,9 +70,7 @@
     }
   </style>
 
-  <h2>
-    <i class="bi bi-journal-bookmark-fill me-2"></i>Mes cours
-  </h2>
+  <h2>Mes cours</h2>
 
   <div th:if="${inscriptions.isEmpty()}" class="alert alert-warning text-center">
     <i class="bi bi-exclamation-circle-fill me-1"></i>
@@ -87,9 +85,12 @@
         <div class="card-body">
           <h5 th:text="${insc.cours.titre}" class="mb-2">Titre</h5>
           <p class="text-muted" th:text="${insc.cours.description}">Description</p>
-          <p><strong>Professeur :</strong> <span th:text="${insc.cours.enseignant.nom + ' ' + insc.cours.enseignant.prenom}">Nom Prénom</span></p>
+          <p>
+            <i class="bi bi-person-fill me-1"></i>
+            <span th:text="${insc.cours.enseignant.nom + ' ' + insc.cours.enseignant.prenom}">Nom Prénom</span>
+          </p>
           <p class="mb-2">
-            <i class="bi bi-bar-chart-line-fill me-1"></i>Progression :
+            Progression :
             <strong th:text="${insc.progression + '%'}">0%</strong>
           </p>
           <div class="progress mb-3">
@@ -106,9 +107,7 @@
 
   <div class="row align-items-center mb-3" id="coursDisponibles">
     <div class="col-md-6 text-start">
-      <h2>
-        <i class="bi bi-journals me-2"></i>Cours disponibles
-      </h2>
+      <h2>Cours disponibles</h2>
     </div>
     <div class="col-md-6 d-flex justify-content-end">
       <select id="categorieSelect" name="categorie" class="form-select" style="max-width: 220px;">
@@ -122,7 +121,6 @@
       </select>
     </div>
   </div>
-
 
   <script>
     document.addEventListener("DOMContentLoaded", function() {
@@ -151,7 +149,10 @@
         <div class="card-body">
           <h5 th:text="${cours.titre}" class="mb-2">Titre</h5>
           <p class="text-muted" th:text="${cours.description}">Description</p>
-          <p><strong>Professeur :</strong> <span th:text="${cours.enseignant.nom + ' ' + cours.enseignant.prenom}">Nom Prénom</span></p>
+          <p>
+            <i class="bi bi-person-fill me-1"></i>
+            <span th:text="${cours.enseignant.nom + ' ' + cours.enseignant.prenom}">Nom Prénom</span>
+          </p>
           <a th:href="@{/etudiant/s-inscrire/{id}(id=${cours.id})}" class="btn btn-purple btn-sm w-100">
             <i class="bi bi-plus-circle-fill me-1"></i>S'inscrire
           </a>
