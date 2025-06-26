@@ -5,15 +5,16 @@
     <title>Messagerie</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
     <style>
         body {
-            background: #f2f2f2;
+            background: #f0f2f5;
             font-family: 'Segoe UI', sans-serif;
         }
         .message-container {
             height: 80vh;
             display: flex;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
         }
@@ -26,62 +27,97 @@
         .chat {
             width: 70%;
             background-color: #fff;
-            padding: 1rem;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
         .contact-item {
-            padding: 0.75rem 1rem;
+            padding: 1rem;
             border-bottom: 1px solid #eee;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #333;
+        }
+        .contact-item i,
+        .contact-item strong {
+            color: #764ba2;
         }
         .contact-item:hover, .contact-item.active {
             background-color: #f7f7f7;
         }
         .message {
             max-width: 75%;
-            padding: .5rem .75rem;
-            border-radius: 15px;
+            padding: .6rem 1rem;
+            border-radius: 20px;
             margin-bottom: .75rem;
         }
-        .me { background-color: #764ba2; color: white; margin-left: auto; text-align: right; }
-        .them { background-color: #f1f1f1; color: #333; }
+        .me {
+            background-color: #764ba2;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .me small {
+            color: #fff;
+        }
+        .them {
+            background-color: #e4e6eb;
+            color: #333;
+        }
         .chat-body {
+            padding: 1rem;
             overflow-y: auto;
             flex-grow: 1;
-            padding-right: 10px;
+        }
+        .chat-footer {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+        }
+        .btn-purple {
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            border: none;
+        }
+        .btn-purple:hover {
+            background: #5a67d8;
         }
     </style>
 </head>
 <body>
 
+<!-- ✅ Header avec notifications/messages -->
 <div th:replace="fragments/header :: customHeader"></div>
 
 <div class="container my-4">
     <div class="message-container">
         <!-- 🧍 Liste des utilisateurs -->
         <div class="contacts">
-            <div class="p-3 fw-bold">Discussions</div>
+            <div class="p-3 fw-bold border-bottom d-flex align-items-center">
+                <i class="bi bi-people-fill me-2"></i> Discussions
+            </div>
             <div th:each="u : ${utilisateurs}">
                 <a th:href="@{'/messagerie/discussion/' + ${u.id}}"
                    th:class="'contact-item d-block ' + (${u.id} == ${autreUtilisateur?.id} ? 'active' : '')">
+                    <i class="bi bi-person-circle"></i>
                     <strong th:text="${u.prenom + ' ' + u.nom}">Nom</strong>
-                    <div class="text-muted small">Voir les messages</div>
                 </a>
             </div>
         </div>
 
         <!-- 💬 Discussion sélectionnée -->
         <div class="chat">
-            <div class="chat-body mb-3">
+            <div class="chat-body">
                 <div th:if="${autreUtilisateur != null}">
-                    <h6 class="fw-bold mb-3" th:text="${autreUtilisateur.prenom + ' ' + autreUtilisateur.nom}">Nom</h6>
+                    <div class="fw-bold text-primary mb-3 ps-1 border-bottom pb-2" style="font-size: 1.1rem;">
+                        <i class="bi bi-chat-dots-fill me-2"></i>
+                        <span th:text="${autreUtilisateur.prenom + ' ' + autreUtilisateur.nom}">Nom</span>
+                    </div>
 
                     <div th:each="msg : ${messages}" class="message"
                          th:classappend="${msg.expediteur.id == utilisateurConnecte.id} ? 'me' : 'them'">
                         <div th:text="${msg.contenu}">contenu</div>
-                        <small class="d-block mt-1 text-muted"
+                        <small class="d-block mt-1"
                                th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}">date</small>
                     </div>
                 </div>
@@ -90,7 +126,7 @@
                 </div>
             </div>
 
-            <form th:if="${autreUtilisateur != null}" th:action="@{'/messagerie/envoyer/' + ${autreUtilisateur.id}}" method="post">
+            <form th:if="${autreUtilisateur != null}" th:action="@{'/messagerie/envoyer/' + ${autreUtilisateur.id}}" method="post" class="chat-footer">
                 <div class="input-group">
                     <input type="text" name="contenu" class="form-control" placeholder="Votre message..." required>
                     <button class="btn btn-purple" type="submit">
