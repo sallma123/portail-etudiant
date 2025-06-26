@@ -4,49 +4,80 @@
       th:with="pageTitle='Gestion des utilisateurs', pageContent=~{::section}">
 
 <section>
-    <div class="card mx-auto" style="background: #fff; padding: 2rem; border-radius: 1rem; box-shadow: 0 8px 20px rgba(0,0,0,0.2); max-width: 1000px;">
+    <div class="card mx-auto" style="background: #fff; padding: 2rem; border-radius: 1rem; box-shadow: 0 8px 20px rgba(0,0,0,0.1); max-width: 1100px;">
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="text-primary"><i class="bi bi-people-fill me-2"></i>Gestion des utilisateurs</h3>
-        </div>
-
-        <div class="text-end mb-3">
-            <a href="/admin/users/new" class="btn btn-primary">
-                <i class="bi bi-person-plus-fill me-1"></i>Ajouter un utilisateur
+        <!-- Titre + bouton -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-primary m-0">
+                <i class="bi bi-people-fill me-2"></i> Gestion des utilisateurs
+            </h3>
+            <a href="/admin/users/new" class="btn btn-purple d-flex align-items-center">
+                <i class="bi bi-person-plus-fill me-1"></i> Ajouter
             </a>
         </div>
 
-        <table class="table table-bordered table-hover text-center align-middle">
-            <thead class="table-dark">
-            <tr>
-                <th>#</th>
-                <th>Nom complet</th>
-                <th>Email</th>
-                <th>Rôle</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="u, iStat : ${users}">
-                <td th:text="${iStat.count}">1</td>
-                <td th:text="${u.nom + ' ' + u.prenom}">Nom Prénom</td>
-                <td th:text="${u.email}">email@example.com</td>
-                <td th:text="${u.role.name}">Rôle</td>
-                <td>
-                    <a th:href="@{'/admin/users/edit/' + ${u.id}}" class="btn btn-sm btn-outline-primary" title="Modifier">
-                        <i class="bi bi-pencil-square"></i>
-                    </a>
-                    <a th:href="@{'/admin/users/delete/' + ${u.id}}" class="btn btn-sm btn-outline-danger"
-                       onclick="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')" title="Supprimer">
-                        <i class="bi bi-trash-fill"></i>
-                    </a>
-                </td>
-            </tr>
-            <tr th:if="${users.size() == 0}">
-                <td colspan="5" class="text-center">Aucun utilisateur enregistré.</td>
-            </tr>
-            </tbody>
-        </table>
+        <!-- Tableau -->
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nom complet</th>
+                    <th>Email</th>
+                    <th>Rôle</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="u, iStat : ${users}">
+                    <td th:text="${iStat.count}">1</td>
+                    <td th:text="${u.nom + ' ' + u.prenom}">Nom Prénom</td>
+                    <td th:text="${u.email}">email@example.com</td>
+                    <td th:text="${u.role.name}">Rôle</td>
+                    <td>
+                        <a th:href="@{'/admin/users/edit/' + ${u.id}}" class="btn btn-sm btn-outline-primary me-1" title="Modifier">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a th:href="@{'/admin/users/delete/' + ${u.id}}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Voulez-vous vraiment supprimer cet utilisateur ?')" title="Supprimer">
+                            <i class="bi bi-trash-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                <tr th:if="${users.size() == 0}">
+                    <td colspan="5" class="text-center text-muted">Aucun utilisateur enregistré.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <!-- Style violet dégradé -->
+    <style>
+        .btn-purple {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.45rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .btn-purple:hover {
+            background: #5a67d8;
+            transform: scale(1.05);
+        }
+
+        thead tr {
+            background: linear-gradient(to right, #667eea, #764ba2) !important;
+        }
+
+        thead tr th {
+            color: white !important;
+            border: none !important;
+            background: transparent !important;
+        }
+    </style>
 </section>
 </html>
