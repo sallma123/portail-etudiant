@@ -1,26 +1,28 @@
-<!-- templates/ajouter-cours.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="layout :: layout(~{::section})"
       th:with="pageTitle='Ajouter un cours', pageContent=~{::section}">
 
-<section class="d-flex justify-content-center">
-    <div class="card-custom" style="max-width: 600px; width: 100%;">
-        <h3 class="mb-4 text-center">
+<section class="d-flex justify-content-center" style="padding: 2rem;">
+    <div class="card shadow-lg p-4" style="max-width: 700px; width: 100%; border-radius: 1rem;">
+        <h3 class="mb-4 text-center text-primary" style="font-weight: bold;">
             <i class="bi bi-plus-circle-fill me-2"></i>Ajouter un nouveau cours
         </h3>
 
-        <form method="post" th:action="@{/enseignant/ajouter-cours}" th:object="${cours}">
+        <form method="post" th:action="@{/enseignant/ajouter-cours}" th:object="${cours}" enctype="multipart/form-data">
+            <!-- ✅ Titre -->
             <div class="mb-3">
                 <label class="form-label">Titre du cours</label>
-                <input type="text" th:field="*{titre}" class="form-control" required />
+                <input type="text" th:field="*{titre}" class="form-control" placeholder="Ex: Développement Web" required />
             </div>
 
+            <!-- ✅ Description -->
             <div class="mb-3">
                 <label class="form-label">Description</label>
-                <textarea th:field="*{description}" class="form-control" rows="3" required></textarea>
+                <textarea th:field="*{description}" class="form-control" rows="3" placeholder="Une brève description du cours..." required></textarea>
             </div>
 
+            <!-- ✅ Catégorie -->
             <div class="mb-3">
                 <label class="form-label">Catégorie</label>
                 <select th:field="*{categorie}" class="form-select" required>
@@ -34,8 +36,15 @@
                 </select>
             </div>
 
+            <!-- ✅ Image -->
+            <div class="mb-4">
+                <label class="form-label">Image de couverture</label>
+                <input type="file" name="imageFile" class="form-control" accept="image/*" required />
+                <small class="form-text text-muted">Formats acceptés : JPG, PNG. Taille recommandée : 1200x600px</small>
+            </div>
 
-            <div class="d-flex justify-content-between">
+            <!-- ✅ Boutons -->
+            <div class="d-flex justify-content-between mt-4">
                 <a th:href="@{/enseignant/mes-cours}" class="btn btn-secondary">
                     <i class="bi bi-arrow-left-circle me-1"></i>Retour
                 </a>
@@ -46,4 +55,33 @@
         </form>
     </div>
 </section>
+
+<style>
+    .btn-purple {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        color: white;
+        font-weight: 500;
+        border: none;
+        border-radius: 10px;
+        transition: all 0.3s ease-in-out;
+    }
+
+    .btn-purple:hover {
+        background: #5a67d8;
+        transform: scale(1.05);
+    }
+
+    input[type="file"]::file-selector-button {
+        background: #764ba2;
+        color: white;
+        border: none;
+        padding: 0.4rem 1rem;
+        border-radius: 6px;
+        margin-right: 1rem;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+        background: #5a67d8;
+    }
+</style>
 </html>

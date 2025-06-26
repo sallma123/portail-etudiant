@@ -15,6 +15,8 @@ public class Cours {
     private String description;
     private String categorie;
     private LocalDate dateCreation;
+    @Column(name = "image_path")
+    private String image;
 
     @ManyToOne
     @JoinColumn(name = "enseignant_id")
@@ -97,5 +99,12 @@ public class Cours {
 
     public void setQuiz(Quiz quiz) {
         this.quiz = quiz;
+    }
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }

@@ -32,7 +32,10 @@ public class EtudiantController {
 
     // 📚 Liste des cours disponibles
     @GetMapping("/cours-disponibles")
-    public String coursDisponibles(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+    public String coursDisponibles(@RequestParam(required = false) String categorie,
+                                   Model model,
+                                   @AuthenticationPrincipal UserDetails userDetails) {
+
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
 
         List<Cours> tousLesCours = coursRepository.findAll();
@@ -44,12 +47,21 @@ public class EtudiantController {
 
         List<Cours> coursNonInscrits = tousLesCours.stream()
                 .filter(c -> !coursInscrits.contains(c))
-                .toList();
+                .collect(Collectors.toList());
+
+        // 🔍 Filtrage par catégorie si nécessaire
+        if (categorie != null && !categorie.isEmpty()) {
+            coursNonInscrits = coursNonInscrits.stream()
+                    .filter(c -> c.getCategorie() != null && c.getCategorie().equalsIgnoreCase(categorie))
+                    .collect(Collectors.toList());
+        }
 
         model.addAttribute("coursDisponibles", coursNonInscrits);
         model.addAttribute("inscriptions", inscriptions);
+        model.addAttribute("categorie", categorie); // Pour garder la sélection
         return "cours-disponibles";
     }
+
 
     // ✅ Inscription à un cours
     @GetMapping("/s-inscrire/{coursId}")

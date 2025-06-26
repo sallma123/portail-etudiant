@@ -1,12 +1,76 @@
-<!-- templates/cours-disponibles.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="layout :: layout(~{::section})"
+      th:replace="layout-dashboard :: layout(~{::section})"
       th:with="pageTitle='Mes cours', pageContent=~{::section}">
 
-<section>
-  <!-- 🎓 Mes cours -->
-  <h2 class="text-center mb-4">
+<section style="background: #fff; padding: 2rem; border-radius: 1rem;">
+  <style>
+    h2 {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 2rem;
+      margin-top: 0;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .card-custom {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card-custom:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-image {
+      height: 180px;
+      background-color: #f0f0f0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .btn-purple, .btn-support {
+      background: linear-gradient(135deg, #764ba2, #667eea);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .btn-purple:hover, .btn-support:hover {
+      background: #5a67d8;
+      transform: scale(1.05);
+    }
+
+    .progress {
+      height: 8px;
+      background-color: #e9ecef;
+      border-radius: 5px;
+    }
+
+    select.form-select {
+      border-radius: 10px;
+      padding: 0.5rem 2rem 0.5rem 1rem;
+      border: 1px solid #ccc;
+      font-size: 0.95rem;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='16' height='16' fill='black' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.018 2.342 4 3.204 4h9.592c.862 0 1.319 1.018.753 1.658L8.753 11.14a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+    }
+  </style>
+
+  <h2>
     <i class="bi bi-journal-bookmark-fill me-2"></i>Mes cours
   </h2>
 
@@ -16,30 +80,63 @@
   </div>
 
   <div class="row g-4 mb-5" th:if="${!inscriptions.isEmpty()}">
-    <div class="col-md-6" th:each="insc : ${inscriptions}">
+    <div class="col-md-6 col-lg-4" th:each="insc : ${inscriptions}">
       <div class="card-custom">
-        <h5 th:text="${insc.cours.titre}">Titre</h5>
-        <p th:text="${insc.cours.description}">Description</p>
-        <p class="mb-2">
-          <i class="bi bi-bar-chart-line-fill me-1"></i>Progression :
-          <strong th:text="${insc.progression + '%'}">0%</strong>
-        </p>
-        <div class="progress" style="height: 10px;">
-          <div class="progress-bar bg-success" role="progressbar"
-               th:style="'width: ' + ${insc.progression} + '%'"></div>
+        <div class="card-image" th:style="'background-image: url(' + ${insc.cours.image} + ')'">
         </div>
-        <a th:href="@{/etudiant/cours/{id}/supports(id=${insc.cours.id})}"
-           class="btn btn-outline-primary btn-sm mt-2">
-          <i class="bi bi-folder-fill me-1"></i>Voir supports
-        </a>
+        <div class="card-body">
+          <h5 th:text="${insc.cours.titre}" class="mb-2">Titre</h5>
+          <p class="text-muted" th:text="${insc.cours.description}">Description</p>
+          <p><strong>Professeur :</strong> <span th:text="${insc.cours.enseignant.nom + ' ' + insc.cours.enseignant.prenom}">Nom Prénom</span></p>
+          <p class="mb-2">
+            <i class="bi bi-bar-chart-line-fill me-1"></i>Progression :
+            <strong th:text="${insc.progression + '%'}">0%</strong>
+          </p>
+          <div class="progress mb-3">
+            <div class="progress-bar bg-success" role="progressbar" th:style="'width: ' + ${insc.progression} + '%'" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <a th:href="@{/etudiant/cours/{id}/supports(id=${insc.cours.id})}"
+             class="btn btn-support btn-sm w-100">
+            <i class="bi bi-folder-fill me-1"></i>Voir supports
+          </a>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 📖 Cours disponibles -->
-  <h2 class="text-center mb-4">
-    <i class="bi bi-journals me-2"></i>Cours disponibles
-  </h2>
+  <div class="row align-items-center mb-3" id="coursDisponibles">
+    <div class="col-md-6 text-start">
+      <h2>
+        <i class="bi bi-journals me-2"></i>Cours disponibles
+      </h2>
+    </div>
+    <div class="col-md-6 d-flex justify-content-end">
+      <select id="categorieSelect" name="categorie" class="form-select" style="max-width: 220px;">
+        <option value="">Toutes les catégories</option>
+        <option value="Programmation">Programmation</option>
+        <option value="Informatique">Informatique</option>
+        <option value="Mathématiques">Mathématiques</option>
+        <option value="Gestion">Gestion</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Autre">Autre</option>
+      </select>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const select = document.getElementById("categorieSelect");
+      const cards = document.querySelectorAll("[data-categorie]");
+
+      select.addEventListener("change", function() {
+        const val = this.value;
+        cards.forEach(card => {
+          card.style.display = (!val || card.dataset.categorie === val) ? "block" : "none";
+        });
+      });
+    });
+  </script>
 
   <div th:if="${coursDisponibles.isEmpty()}" class="alert alert-success text-center">
     <i class="bi bi-check-circle-fill me-1"></i>
@@ -47,13 +144,18 @@
   </div>
 
   <div class="row g-4" th:if="${!coursDisponibles.isEmpty()}">
-    <div class="col-md-6" th:each="cours : ${coursDisponibles}">
+    <div class="col-md-6 col-lg-4" th:each="cours : ${coursDisponibles}" th:attr="data-categorie=${cours.categorie}">
       <div class="card-custom">
-        <h5 th:text="${cours.titre}">Titre</h5>
-        <p th:text="${cours.description}">Description</p>
-        <a th:href="@{/etudiant/s-inscrire/{id}(id=${cours.id})}" class="btn btn-purple btn-sm">
-          <i class="bi bi-plus-circle-fill me-1"></i>S'inscrire
-        </a>
+        <div class="card-image" th:style="'background-image: url(' + ${cours.image} + ')'">
+        </div>
+        <div class="card-body">
+          <h5 th:text="${cours.titre}" class="mb-2">Titre</h5>
+          <p class="text-muted" th:text="${cours.description}">Description</p>
+          <p><strong>Professeur :</strong> <span th:text="${cours.enseignant.nom + ' ' + cours.enseignant.prenom}">Nom Prénom</span></p>
+          <a th:href="@{/etudiant/s-inscrire/{id}(id=${cours.id})}" class="btn btn-purple btn-sm w-100">
+            <i class="bi bi-plus-circle-fill me-1"></i>S'inscrire
+          </a>
+        </div>
       </div>
     </div>
   </div>
