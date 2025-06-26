@@ -1,5 +1,6 @@
 package com.etudiant.gestion_etudiant.controller;
 
+import com.etudiant.gestion_etudiant.dto.UtilisateurAvecMessageDTO;
 import com.etudiant.gestion_etudiant.entity.MessagePrive;
 import com.etudiant.gestion_etudiant.entity.User;
 import com.etudiant.gestion_etudiant.repository.MessagePriveRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -35,7 +37,13 @@ public class MessagerieController {
                 })
                 .toList();
 
-        model.addAttribute("utilisateurs", autres);
+        List<UtilisateurAvecMessageDTO> utilisateurs = new ArrayList<>();
+        for (User u : autres) {
+            String dernierMsg = messagerieService.getDernierMessageEntre(me, u);
+            utilisateurs.add(new UtilisateurAvecMessageDTO(u, dernierMsg));
+        }
+
+        model.addAttribute("utilisateurs", utilisateurs);
         model.addAttribute("utilisateurConnecte", me);
         model.addAttribute("autreUtilisateur", null);
         model.addAttribute("messages", List.of());
@@ -57,7 +65,7 @@ public class MessagerieController {
             return "redirect:/messagerie";
         }
 
-        List<User> autresUtilisateurs = userRepository.findAll().stream()
+        List<User> autres = userRepository.findAll().stream()
                 .filter(u -> !u.getId().equals(me.getId()))
                 .filter(u -> {
                     String r = u.getRole().getName();
@@ -65,9 +73,15 @@ public class MessagerieController {
                 })
                 .toList();
 
+        List<UtilisateurAvecMessageDTO> utilisateurs = new ArrayList<>();
+        for (User u : autres) {
+            String dernierMsg = messagerieService.getDernierMessageEntre(me, u);
+            utilisateurs.add(new UtilisateurAvecMessageDTO(u, dernierMsg));
+        }
+
         List<MessagePrive> messages = messagerieService.getConversation(me, autre);
 
-        model.addAttribute("utilisateurs", autresUtilisateurs);
+        model.addAttribute("utilisateurs", utilisateurs);
         model.addAttribute("utilisateurConnecte", me);
         model.addAttribute("autreUtilisateur", autre);
         model.addAttribute("messages", messages);

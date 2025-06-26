@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MessagePriveRepository extends JpaRepository<MessagePrive, Long> {
 
@@ -20,5 +21,7 @@ public interface MessagePriveRepository extends JpaRepository<MessagePrive, Long
     List<MessagePrive> findByExpediteurOrDestinataireOrderByDateDesc(User expediteur, User destinataire);
     boolean existsByDestinataireAndLuFalse(User destinataire);
     List<MessagePrive> findByDestinataireAndLuFalse(User destinataire);
+    Optional<MessagePrive> findTopByExpediteurAndDestinataireOrDestinataireAndExpediteurOrderByDateDesc(
+            User exp1, User dest1, User exp2, User dest2);
 
 }

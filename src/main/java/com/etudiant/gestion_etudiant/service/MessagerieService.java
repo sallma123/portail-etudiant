@@ -1,4 +1,4 @@
-// com.etudiant.gestion_etudiant.service.MessagerieService.java
+
 package com.etudiant.gestion_etudiant.service;
 
 import com.etudiant.gestion_etudiant.entity.MessagePrive;
@@ -7,8 +7,8 @@ import com.etudiant.gestion_etudiant.repository.MessagePriveRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MessagerieService {
@@ -22,6 +22,7 @@ public class MessagerieService {
         msg.setDestinataire(destinataire);
         msg.setContenu(contenu);
         msg.setDate(java.time.LocalDateTime.now());
+        msg.setLu(false);
         messagePriveRepository.save(msg);
     }
 
@@ -31,5 +32,13 @@ public class MessagerieService {
 
     public List<MessagePrive> getConversation(User utilisateur1, User utilisateur2) {
         return messagePriveRepository.findByExpediteurAndDestinataireOrViceVersa(utilisateur1, utilisateur2);
+    }
+
+    public String getDernierMessageEntre(User utilisateur1, User utilisateur2) {
+        Optional<MessagePrive> dernier = messagePriveRepository
+                .findTopByExpediteurAndDestinataireOrDestinataireAndExpediteurOrderByDateDesc(
+                        utilisateur1, utilisateur2, utilisateur1, utilisateur2);
+
+        return dernier.map(MessagePrive::getContenu).orElse("");
     }
 }
