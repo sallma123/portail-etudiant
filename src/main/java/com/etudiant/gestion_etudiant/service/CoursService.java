@@ -161,4 +161,8 @@ public class CoursService {
             return map;
         }).collect(Collectors.toList());
     }
+    public List<Cours> getCoursParEnseignantEtCategorie(User enseignant, String categorie) {
+        return coursRepository.findByEnseignantAndCategorie(enseignant, categorie);
+    }
+
 }

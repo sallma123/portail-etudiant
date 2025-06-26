@@ -27,7 +27,6 @@
             padding: 2rem;
         }
 
-        /* ✅ appliquer le dégradé à toute la ligne */
         thead tr {
             background: linear-gradient(to right, #667eea, #764ba2) !important;
         }
@@ -43,7 +42,7 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 2rem;
-            margin-top: 0 !important; /* empêche l'espace au-dessus */
+            margin-top: 0 !important;
         }
 
         h2 i {
@@ -54,18 +53,48 @@
             border-radius: 10px;
             font-size: 0.875rem;
         }
+
+        .filter-form select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23667eea' class='bi bi-chevron-down' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1rem;
+            appearance: none;
+            padding-right: 2.5rem; /* espace pour l’icône */
+        }
+
+
+
+        .filter-form .btn {
+            margin-left: 1rem;
+        }
     </style>
 
-    <h2 class="text-center">
-        Mes cours
-    </h2>
+    <!-- ✅ Titre -->
+    <h2 class="text-center">Mes cours</h2>
 
-    <div class="d-flex justify-content-end mb-4">
+    <!-- ✅ Barre avec filtre à gauche et bouton à droite -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <!-- 🔍 Formulaire de filtre -->
+        <form th:action="@{/enseignant/mes-cours}" method="get" class="d-flex align-items-center filter-form">
+            <select name="categorie" class="form-select" onchange="this.form.submit()">
+                <option th:selected="${categorie == null}" value="">Toutes les catégories </option>
+                <option value="Programmation" th:selected="${categorie == 'Programmation'}">Programmation</option>
+                <option value="Informatique" th:selected="${categorie == 'Informatique'}">Informatique</option>
+                <option value="Mathématiques" th:selected="${categorie == 'Mathématiques'}">Mathématiques</option>
+                <option value="Gestion" th:selected="${categorie == 'Gestion'}">Gestion</option>
+                <option value="Marketing" th:selected="${categorie == 'Marketing'}">Marketing</option>
+                <option value="Autre" th:selected="${categorie == 'Autre'}">Autre</option>
+            </select>
+        </form>
+
+        <!-- ➕ Ajouter cours -->
         <a href="/enseignant/ajouter-cours" class="btn btn-purple px-4 py-2">
             <i class="bi bi-plus-circle-fill me-2"></i>Ajouter un cours
         </a>
     </div>
 
+    <!-- ✅ Tableau -->
     <div class="glass-card">
         <table class="table table-hover align-middle text-center">
             <thead>

@@ -8,4 +8,7 @@ import java.util.List;
 
 public interface CoursRepository extends JpaRepository<Cours, Long> {
     List<Cours> findByEnseignant(User enseignant); // Récupérer les cours d’un enseignant
+    List<Cours> findByCategorie(String categorie);
+    List<Cours> findByEnseignantAndCategorie(User enseignant, String categorie);
+
 }

@@ -22,14 +22,14 @@ public class CoursController {
     @Autowired private SupportService supportService;
     @Autowired private UserService userService;
 
-    // ✅ Liste des cours pour API
+    // ✅ API : Liste des cours
     @GetMapping
     public List<Cours> getCours(@AuthenticationPrincipal(expression = "username") String email) {
         User enseignant = userService.findByEmail(email);
         return coursService.getCoursParEnseignant(enseignant);
     }
 
-    // ✅ Ajouter un cours via API (pas notification ici)
+    // ✅ API : Ajouter un cours
     @PostMapping
     public Cours ajouterCours(@RequestBody Cours cours,
                               @AuthenticationPrincipal(expression = "username") String email) {
@@ -37,38 +37,31 @@ public class CoursController {
         return coursService.ajouterCours(cours, enseignant);
     }
 
-    // ✅ Modifier un cours via API
+    // ✅ API : Modifier un cours
     @PutMapping("/{id}")
     public Cours modifierCours(@PathVariable Long id, @RequestBody Cours coursModifie) {
         return coursService.modifierCours(id, coursModifie);
     }
 
-    // ✅ Supprimer un cours via API
+    // ✅ API : Supprimer un cours
     @DeleteMapping("/{id}")
     public void supprimerCours(@PathVariable Long id) {
         coursService.supprimerCours(id);
     }
 
-    // ✅ Ajouter un support
+    // ✅ API : Ajouter un support
     @PostMapping("/{id}/supports")
     public Support ajouterSupport(@PathVariable Long id, @RequestBody Support support) {
         Optional<Cours> coursOpt = coursService.getCoursParId(id);
-        if (coursOpt.isPresent()) {
-            return supportService.ajouterSupport(support, coursOpt.get());
-        } else {
-            throw new RuntimeException("Cours non trouvé");
-        }
+        return coursOpt.map(c -> supportService.ajouterSupport(support, c))
+                .orElseThrow(() -> new RuntimeException("Cours non trouvé"));
     }
 
-    // ✅ Lister les supports
+    // ✅ API : Liste des supports
     @GetMapping("/{id}/supports-api")
     public List<Support> getSupports(@PathVariable Long id) {
         Optional<Cours> coursOpt = coursService.getCoursParId(id);
-        if (coursOpt.isPresent()) {
-            return supportService.getSupportsParCours(coursOpt.get());
-        } else {
-            throw new RuntimeException("Cours non trouvé");
-        }
+        return coursOpt.map(supportService::getSupportsParCours)
+                .orElseThrow(() -> new RuntimeException("Cours non trouvé"));
     }
-
 }

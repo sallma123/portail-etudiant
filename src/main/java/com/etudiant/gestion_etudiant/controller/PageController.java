@@ -7,6 +7,7 @@ import com.etudiant.gestion_etudiant.repository.UserRepository;
 import com.etudiant.gestion_etudiant.service.CoursService;
 import com.etudiant.gestion_etudiant.service.SupportService;
 import com.etudiant.gestion_etudiant.service.UserService;
+
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,7 +40,7 @@ public class PageController {
         this.supportService = supportService;
     }
 
-    // Login
+    // ✅ Login
     @GetMapping("/login")
     public String loginPage(@RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "resetSuccess", required = false) String resetSuccess,
@@ -53,7 +54,7 @@ public class PageController {
         return "login";
     }
 
-    // Dashboards
+    // ✅ Dashboards
     @GetMapping("/enseignant/dashboard")
     public String enseignantDashboard(Authentication auth, Model model,
                                       @AuthenticationPrincipal(expression = "username") String email) {
@@ -94,16 +95,7 @@ public class PageController {
         return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(role));
     }
 
-    // Liste des cours
-    @GetMapping("/enseignant/mes-cours")
-    public String afficherMesCours(Model model,
-                                   @AuthenticationPrincipal(expression = "username") String email) {
-        User enseignant = userService.findByEmail(email);
-        model.addAttribute("coursList", coursService.getCoursParEnseignant(enseignant));
-        return "mes-cours";
-    }
-
-    // Liste des supports d’un cours
+    // ✅ Liste des supports
     @GetMapping("/enseignant/cours/{id}/supports")
     public String afficherListeSupports(@PathVariable Long id, Model model) {
         return coursService.getCoursParId(id).map(cours -> {
@@ -113,7 +105,7 @@ public class PageController {
         }).orElse("redirect:/enseignant/mes-cours");
     }
 
-    // Ajouter un support
+    // ✅ Formulaire d’ajout de support
     @GetMapping("/enseignant/cours/{id}/ajouter-support")
     public String afficherFormulaireSupport(@PathVariable Long id, Model model) {
         return coursService.getCoursParId(id).map(cours -> {
@@ -122,6 +114,7 @@ public class PageController {
         }).orElse("redirect:/enseignant/mes-cours");
     }
 
+    // ✅ Upload support
     @PostMapping("/enseignant/cours/{id}/upload-support")
     public String uploadSupport(@PathVariable Long id,
                                 @RequestParam("nomFichier") String nomFichier,
@@ -145,15 +138,13 @@ public class PageController {
             support.setLien("/fichiers/" + fileName);
             supportService.ajouterSupport(support, coursOpt.get());
 
-            System.out.println("✅ Support uploadé : " + fileName);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "redirect:/enseignant/cours/" + id + "/supports";
     }
 
-    // Supprimer un support
+    // ✅ Supprimer un support
     @PostMapping("/enseignant/support/{id}/supprimer")
     public String supprimerSupport(@PathVariable Long id) {
         Optional<Support> supportOpt = supportService.getSupportParId(id);
@@ -166,13 +157,6 @@ public class PageController {
             supportService.supprimerSupport(id);
             return "redirect:/enseignant/cours/" + coursId + "/supports";
         }
-        return "redirect:/enseignant/mes-cours";
-    }
-
-    // Supprimer un cours + ses supports
-    @GetMapping("/enseignant/cours/{id}/supprimer")
-    public String supprimerCours(@PathVariable Long id) {
-        coursService.supprimerCours(id);
         return "redirect:/enseignant/mes-cours";
     }
 }
