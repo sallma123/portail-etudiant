@@ -3,12 +3,14 @@ package com.etudiant.gestion_etudiant.service;
 import com.etudiant.gestion_etudiant.dto.StatistiqueCours;
 import com.etudiant.gestion_etudiant.entity.*;
 import com.etudiant.gestion_etudiant.repository.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,15 +24,17 @@ public class CoursService {
     @Autowired private ForumService forumService;
     @Autowired private InscriptionService inscriptionService;
     @Autowired private QuizRepository quizRepository;
+    @Autowired private ResultatRepository resultatRepository;
+    @Autowired private QuestionRepository questionRepository;
+    @Autowired private ReponseRepository reponseRepository;
+    @Autowired private SupportVuRepository supportVuRepository;
 
-    // ✅ Ajouter un cours
     public Cours ajouterCours(Cours cours, User enseignant) {
         cours.setDateCreation(LocalDate.now());
         cours.setEnseignant(enseignant);
         return coursRepository.save(cours);
     }
 
-    // ✅ Modifier un cours
     public Cours modifierCours(Long id, Cours coursModifie) {
         return coursRepository.findById(id).map(cours -> {
             cours.setTitre(coursModifie.getTitre());
@@ -40,39 +44,48 @@ public class CoursService {
         }).orElseThrow(() -> new RuntimeException("Cours introuvable"));
     }
 
-    // ✅ Supprimer un cours avec tous ses éléments liés
     @Transactional
     public void supprimerCours(Long id) {
         Optional<Cours> coursOpt = coursRepository.findById(id);
         if (coursOpt.isPresent()) {
             Cours cours = coursOpt.get();
 
-            // 1. Supprimer les fichiers physiques des supports
+            if (cours.getQuiz() != null) {
+                Quiz quiz = cours.getQuiz();
+
+                List<Resultat> resultats = resultatRepository.findByQuiz(quiz);
+                resultatRepository.deleteAll(resultats);
+
+                List<Question> questions = questionRepository.findByQuizId(quiz.getId());
+                for (Question q : questions) {
+                    reponseRepository.deleteByQuestionId(q.getId());
+                }
+
+                questionRepository.deleteAll(questions);
+                quizRepository.delete(quiz);
+                cours.setQuiz(null);
+            }
+
             List<Support> supports = supportRepository.findByCours(cours);
             for (Support support : supports) {
+                // 🔥 Supprimer les entrées support_vu liées
+                supportVuRepository.deleteBySupport(support);
+
                 String cheminFichier = support.getLien().replace("/fichiers/", "uploads/");
-                File fichier = new File(cheminFichier);
-                if (fichier.exists()) {
-                    fichier.delete();
+                try {
+                    Files.deleteIfExists(Paths.get(cheminFichier));
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
 
-            // 2. Supprimer les inscriptions
+            supportRepository.deleteAll(supports);
+
             List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
             inscriptionRepository.deleteAll(inscriptions);
 
-            // 3. Supprimer les messages de forum liés
             forumService.supprimerMessagesParCours(cours);
 
-            // 4. Supprimer le quiz associé s’il existe
-            if (cours.getQuiz() != null) {
-                quizRepository.delete(cours.getQuiz());
-            }
-
-            // 5. Supprimer les supports (en base)
-            supportRepository.deleteAll(supports);
-
-            // 6. Supprimer le cours lui-même
             coursRepository.delete(cours);
         } else {
             throw new RuntimeException("Cours introuvable");
@@ -161,8 +174,8 @@ public class CoursService {
             return map;
         }).collect(Collectors.toList());
     }
+
     public List<Cours> getCoursParEnseignantEtCategorie(User enseignant, String categorie) {
         return coursRepository.findByEnseignantAndCategorie(enseignant, categorie);
     }
-
 }

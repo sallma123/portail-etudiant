@@ -94,7 +94,12 @@ public class EnseignantWebController {
     // ✅ Suppression d’un cours (HTML)
     @GetMapping("/cours/{id}/supprimer")
     public String supprimerCours(@PathVariable Long id) {
-        coursService.supprimerCours(id);
+        try {
+            coursService.supprimerCours(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/enseignant/mes-cours?error=suppression";
+        }
         return "redirect:/enseignant/mes-cours";
     }
 }
