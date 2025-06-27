@@ -13,4 +13,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 
     // 🔴 Pour compter les notifications non vues (badge rouge)
     int countByDestinataireAndVueFalse(User destinataire);
+    void deleteByDestinataire(User destinataire);
+
 }

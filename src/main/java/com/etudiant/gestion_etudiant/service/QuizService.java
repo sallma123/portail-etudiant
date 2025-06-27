@@ -1,11 +1,6 @@
 package com.etudiant.gestion_etudiant.service;
 
-import com.etudiant.gestion_etudiant.entity.Cours;
-import com.etudiant.gestion_etudiant.entity.Inscription;
-import com.etudiant.gestion_etudiant.entity.Question;
-import com.etudiant.gestion_etudiant.entity.Quiz;
-import com.etudiant.gestion_etudiant.entity.Reponse;
-import com.etudiant.gestion_etudiant.entity.User;
+import com.etudiant.gestion_etudiant.entity.*;
 import com.etudiant.gestion_etudiant.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,8 +16,10 @@ public class QuizService {
     @Autowired private QuizRepository quizRepository;
     @Autowired private QuestionRepository questionRepository;
     @Autowired private ReponseRepository reponseRepository;
+    @Autowired private ResultatRepository resultatRepository;
     @Autowired private InscriptionRepository inscriptionRepository;
 
+    // ✅ Création d’un quiz
     public Quiz ajouterQuiz(String titre, int seuil, Cours cours) {
         Quiz quiz = new Quiz();
         quiz.setTitre(titre);
@@ -54,31 +51,35 @@ public class QuizService {
         return questionRepository.findById(id).orElseThrow();
     }
 
-    // ✅ Récupérer un quiz par cours
     public Optional<Quiz> getQuizByCours(Cours cours) {
         return quizRepository.findByCours(cours);
     }
 
+    // ✅ Suppression complète d’un quiz avec toutes ses dépendances
     @Transactional
     public void supprimerQuiz(Long quizId) {
         Quiz quiz = getQuizById(quizId);
         Cours cours = quiz.getCours();
 
-        // Dissocier le quiz du cours
-        if (cours != null) {
-            cours.setQuiz(null);
-        }
+        // ❌ Supprimer les résultats liés à ce quiz
+        List<Resultat> resultats = resultatRepository.findByQuiz(quiz);
+        resultatRepository.deleteAll(resultats);
 
-        // Supprimer les réponses
+        // ❌ Supprimer toutes les réponses liées à chaque question
         List<Question> questions = questionRepository.findByQuizId(quizId);
         for (Question q : questions) {
             reponseRepository.deleteByQuestionId(q.getId());
         }
 
-        // Supprimer les questions
+        // ❌ Supprimer les questions du quiz
         questionRepository.deleteByQuizId(quizId);
 
-        // Supprimer le quiz
+        // ❌ Dissocier le quiz du cours s’il est lié
+        if (cours != null) {
+            cours.setQuiz(null);
+        }
+
+        // ✅ Supprimer enfin le quiz
         quizRepository.deleteById(quizId);
     }
 
@@ -86,29 +87,28 @@ public class QuizService {
         quizRepository.save(quiz);
     }
 
-    // ✅ Enregistrer la note de l'étudiant et certificat
+    // ✅ Enregistrer la note de l'étudiant
     public void enregistrerResultatEtudiant(User etudiant, Cours cours, double note, int seuil) {
         Optional<Inscription> opt = inscriptionRepository.findByEtudiantAndCours(etudiant, cours);
         if (opt.isPresent()) {
             Inscription inscription = opt.get();
-
             Double ancienneNote = inscription.getNote();
+
             if (ancienneNote == null || note > ancienneNote) {
                 inscription.setNote(note);
                 inscription.setCertificatObtenu(note >= seuil);
                 inscriptionRepository.save(inscription);
             }
         } else {
-            // Si l'étudiant n'était pas encore inscrit (optionnel selon ton app)
+            // Nouvelle inscription avec note et certificat
             Inscription nouvelle = new Inscription();
             nouvelle.setEtudiant(etudiant);
             nouvelle.setCours(cours);
             nouvelle.setDateInscription(LocalDate.now());
             nouvelle.setNote(note);
             nouvelle.setCertificatObtenu(note >= seuil);
-            nouvelle.setProgression(100); // si besoin
+            nouvelle.setProgression(100);
             inscriptionRepository.save(nouvelle);
         }
     }
-
 }

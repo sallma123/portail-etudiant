@@ -6,20 +6,26 @@ import com.etudiant.gestion_etudiant.repository.InscriptionRepository;
 import com.etudiant.gestion_etudiant.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Override
-    public User save(User user) {
-        return userRepository.save(user);
-    }
+
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private InscriptionRepository inscriptionRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+    @Override
+    public User save(User user) {
+        return userRepository.save(user);
+    }
 
     @Override
     public User findByEmail(String email) {
@@ -52,5 +58,22 @@ public class UserServiceImpl implements UserService {
                 .orElse(0.0);
 
         return Math.round(moyenne * 10.0) / 10.0; // ex: 56.7 %
+    }
+
+    // ✅ Suppression complète d’un utilisateur avec ses dépendances
+    @Override
+    @Transactional
+    public void supprimerUtilisateurParId(Long id) {
+        User user = userRepository.findById(id).orElseThrow();
+
+        // Supprimer les notifications liées à cet utilisateur
+        notificationService.supprimerNotificationsPourUtilisateur(user);
+
+        // Supprimer les inscriptions
+        List<Inscription> inscriptions = inscriptionRepository.findByEtudiant(user);
+        inscriptionRepository.deleteAll(inscriptions);
+
+        // Supprimer l'utilisateur
+        userRepository.deleteById(id);
     }
 }

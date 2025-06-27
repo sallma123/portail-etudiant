@@ -4,6 +4,7 @@ import com.etudiant.gestion_etudiant.entity.User;
 import com.etudiant.gestion_etudiant.entity.Role;
 import com.etudiant.gestion_etudiant.repository.RoleRepository;
 import com.etudiant.gestion_etudiant.repository.UserRepository;
+import com.etudiant.gestion_etudiant.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -23,14 +24,17 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Liste des utilisateurs
+    @Autowired
+    private UserService userService; // ✅ Injection du service
+
+    // ➤ Liste des utilisateurs
     @GetMapping
     public String listUsers(Model model) {
         model.addAttribute("users", userRepository.findAll());
         return "user-list";
     }
 
-    // Formulaire d'ajout
+    // ➤ Formulaire d'ajout
     @GetMapping("/new")
     public String showCreateForm(Model model) {
         model.addAttribute("user", new User());
@@ -38,7 +42,7 @@ public class UserController {
         return "user-form";
     }
 
-    // Enregistrement d'un nouveau user
+    // ➤ Enregistrement d'un nouveau user
     @PostMapping
     public String saveUser(@ModelAttribute("user") User user,
                            @RequestParam("roleId") Long roleId,
@@ -91,10 +95,10 @@ public class UserController {
         return "redirect:/admin/users";
     }
 
-    // ➤ Suppression
+    // ➤ Suppression (modifiée pour éviter erreur 500 si dépendances)
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable Long id) {
-        userRepository.deleteById(id);
+        userService.supprimerUtilisateurParId(id); // ✅ Appelle la suppression complète
         return "redirect:/admin/users";
     }
 }

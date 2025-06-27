@@ -70,4 +70,8 @@ public class NotificationService {
     public int countNotificationsNonVues(User user) {
         return notificationRepository.countByDestinataireAndVueFalse(user);
     }
+    public void supprimerNotificationsPourUtilisateur(User user) {
+        notificationRepository.deleteByDestinataire(user);
+    }
+
 }

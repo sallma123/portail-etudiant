@@ -10,5 +10,6 @@ public interface UserService {
     int countCertificatsObtenus(User etudiant);
     double getProgressionMoyenne(User etudiant);
     User save(User user);
+    void supprimerUtilisateurParId(Long id);
 
 }
