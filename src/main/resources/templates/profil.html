@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="layout :: layout(~{::section})"
+      th:with="pageTitle='Mon Profil', pageContent=~{::section}">
+
+<section class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm p-4" style="border-radius: 1rem;">
+                <h2 class="text-center text-dark mb-4">Mon Profil</h2>
+
+                <!-- ✅ Message de succès -->
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+                <form method="post" th:action="@{/profil}" th:object="${user}">
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Nom</label>
+                        <input type="text" th:field="*{nom}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Prénom</label>
+                        <input type="text" th:field="*{prenom}" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-dark">Email</label>
+                        <input type="email" th:field="*{email}" class="form-control" required>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ✅ Script pour masquer automatiquement le message -->
+<script th:inline="javascript">
+    setTimeout(() => {
+        const alert = document.querySelector('.alert-success');
+        if (alert) alert.style.display = 'none';
+    }, 4000);
+</script>

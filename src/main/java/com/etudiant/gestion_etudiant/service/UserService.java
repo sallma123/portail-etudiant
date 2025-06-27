@@ -9,4 +9,6 @@ public interface UserService {
     int countCoursInscrits(User etudiant);
     int countCertificatsObtenus(User etudiant);
     double getProgressionMoyenne(User etudiant);
+    User save(User user);
+
 }
