@@ -19,6 +19,26 @@
             <!-- Rôle + Nom + Icônes + Déconnexion -->
             <div class="d-flex align-items-center gap-3">
 
+                <!-- 🏠 Accueil unique selon rôle -->
+                <a th:if="${utilisateurConnecte.role.name == 'ROLE_ADMIN'}"
+                   th:href="@{/admin/dashboard}"
+                   class="text-white fs-5 d-flex align-items-center" title="Accueil Admin">
+                    <i class="bi bi-house-fill" style="font-size: 1.2rem;"></i>
+                </a>
+
+                <a th:if="${utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT'}"
+                   th:href="@{/enseignant/dashboard}"
+                   class="text-white fs-5 d-flex align-items-center" title="Accueil Enseignant">
+                    <i class="bi bi-house-fill" style="font-size: 1.2rem;"></i>
+                </a>
+
+                <a th:if="${utilisateurConnecte.role.name == 'ROLE_ETUDIANT'}"
+                   th:href="@{/etudiant/dashboard}"
+                   class="text-white fs-5 d-flex align-items-center" title="Accueil Étudiant">
+                    <i class="bi bi-house-fill" style="font-size: 1.2rem;"></i>
+                </a>
+
+
                 <!-- 🔔 Notifications -->
                 <div class="dropdown"
                      th:if="${utilisateurConnecte != null and (utilisateurConnecte.role.name == 'ROLE_ETUDIANT' or utilisateurConnecte.role.name == 'ROLE_ENSEIGNANT')}">
@@ -42,7 +62,7 @@
                             <div class="dropdown-item d-flex flex-column"
                                  th:classappend="${!notif.vue} ? 'fw-bold' : ''"
                                  style="white-space: normal; word-wrap: break-word; max-width: 100%;">
-                                <div th:text="${notif.message}" style="white-space: normal;">Contenu</div>
+                                <div th:text="${notif.message}">Contenu</div>
                                 <div class="text-muted small"
                                      th:text="${#temporals.format(notif.date, 'dd/MM/yyyy HH:mm')}">Date</div>
                             </div>
@@ -122,29 +142,23 @@
     <!-- ✅ Script intégré : suppression des badges -->
     <script>
         function marquerNotificationsCommeVues() {
-            fetch('/notifications/marquer-vues', {
-                method: 'POST'
-            }).then(response => {
-                if (response.ok) {
-                    const badge = document.getElementById('badge-notif');
-                    if (badge) badge.style.display = 'none';
-                }
-            }).catch(error => {
-                console.error("Erreur notification :", error);
-            });
+            fetch('/notifications/marquer-vues', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        const badge = document.getElementById('badge-notif');
+                        if (badge) badge.style.display = 'none';
+                    }
+                }).catch(error => console.error("Erreur notification :", error));
         }
 
         function marquerMessagesCommeLus() {
-            fetch('/messagerie/marquer-lus', {
-                method: 'POST'
-            }).then(response => {
-                if (response.ok) {
-                    const badge = document.getElementById('badge-message');
-                    if (badge) badge.style.display = 'none';
-                }
-            }).catch(error => {
-                console.error("Erreur message :", error);
-            });
+            fetch('/messagerie/marquer-lus', { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        const badge = document.getElementById('badge-message');
+                        if (badge) badge.style.display = 'none';
+                    }
+                }).catch(error => console.error("Erreur message :", error));
         }
     </script>
 </div>
