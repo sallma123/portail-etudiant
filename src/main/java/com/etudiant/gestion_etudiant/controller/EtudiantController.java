@@ -142,8 +142,7 @@ public class EtudiantController {
     }
 
     // ✅ Envoi d'un message dans le forum
-    // ✅ Envoi d'un message dans le forum
-    @PostMapping("/cours/{id}/forum-integré")
+    @PostMapping("/cours/{id}/forum-ajouter")
     public String posterMessageForum(@PathVariable Long id,
                                      @RequestParam("contenu") String contenu,
                                      @AuthenticationPrincipal UserDetails userDetails) {
@@ -159,7 +158,7 @@ public class EtudiantController {
         message.setDate(LocalDateTime.now());
         forumService.ajouterMessage(message);
 
-        // 🔔 Notification aux autres étudiants inscrits au cours
+        // 🔔 Notifications aux autres étudiants inscrits
         List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
         for (Inscription insc : inscriptions) {
             User autreEtudiant = insc.getEtudiant();
@@ -171,7 +170,7 @@ public class EtudiantController {
             }
         }
 
-        // 🔔 Notification à l'enseignant (si ce n’est pas lui qui écrit)
+        // 🔔 Notification à l'enseignant
         User enseignant = cours.getEnseignant();
         if (!enseignant.getId().equals(etudiant.getId())) {
             notificationService.envoyerNotification(
@@ -182,6 +181,7 @@ public class EtudiantController {
 
         return "redirect:/etudiant/cours/" + id + "/supports";
     }
+
 
 
 

@@ -23,7 +23,17 @@ public class ForumService {
         return messageForumRepository.findByCoursOrderByDateAsc(cours);
     }
 
-    // ✅ Ajouter un nouveau message dans le forum
+    // ✅ Ajouter un message à partir d’un cours, utilisateur et contenu
+    public void ajouterMessage(Cours cours, User auteur, String contenu) {
+        MessageForum msg = new MessageForum();
+        msg.setCours(cours);
+        msg.setAuteur(auteur);
+        msg.setContenu(contenu);
+        msg.setDate(LocalDateTime.now());
+        messageForumRepository.save(msg);
+    }
+
+    // ✅ Ajouter un nouveau message dans le forum (avec objet déjà construit)
     public void ajouterMessage(MessageForum message) {
         message.setDate(LocalDateTime.now());
         messageForumRepository.save(message);

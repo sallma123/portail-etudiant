@@ -31,6 +31,17 @@
         .card-body h6 {
             font-weight: 600;
         }
+        .forum-message {
+            background-color: #fff;
+            border-left: 5px solid #764ba2;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .forum-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
     </style>
 
     <!-- Header avec retour -->
@@ -46,7 +57,6 @@
 
     <!-- Grille des supports -->
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-
         <!-- Carte d'ajout -->
         <div class="col">
             <a th:href="@{'/enseignant/cours/' + ${cours.id} + '/ajouter-support'}"
@@ -88,6 +98,37 @@
     <!-- Message vide -->
     <div th:if="${supports == null or supports.isEmpty()}" class="text-center mt-4">
         <p class="text-muted">Aucun support ajouté pour ce cours pour le moment.</p>
+    </div>
+
+    <!-- Forum de discussion -->
+    <div class="card-section mt-5">
+        <h4 class="mb-3"><i class="bi bi-chat-dots-fill me-2"></i>Forum de discussion du cours</h4>
+        <form th:action="@{'/enseignant/cours/' + ${cours.id} + '/forum-ajouter'}" method="post">
+            <div class="mb-3">
+                <textarea name="contenu" class="form-control" rows="3"
+                          placeholder="Ajoutez une question ou une remarque..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-purple">
+                <i class="bi bi-send-fill me-1"></i>Envoyer
+            </button>
+        </form>
+
+        <hr>
+
+        <div th:each="msg : ${messages}" class="forum-message">
+            <div class="d-flex justify-content-between">
+                <div class="forum-meta">
+                    <strong th:text="${msg.auteur.prenom + ' ' + msg.auteur.nom}"></strong>
+                    <span class="ms-2" th:text="${#temporals.format(msg.date, 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+                <form th:if="${msg.auteur.id == utilisateurConnecte.id}"
+                      th:action="@{'/enseignant/cours/' + ${cours.id} + '/forum/' + ${msg.id} + '/supprimer'}"
+                      method="post" onsubmit="return confirm('Supprimer ce message ?');">
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash-fill"></i></button>
+                </form>
+            </div>
+            <div class="mt-2" th:text="${msg.contenu}"></div>
+        </div>
     </div>
 </section>
 </html>

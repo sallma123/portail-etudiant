@@ -7,6 +7,7 @@ import com.etudiant.gestion_etudiant.repository.UserRepository;
 import com.etudiant.gestion_etudiant.service.CoursService;
 import com.etudiant.gestion_etudiant.service.SupportService;
 import com.etudiant.gestion_etudiant.service.UserService;
+import com.etudiant.gestion_etudiant.service.ForumService;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -27,17 +28,20 @@ public class PageController {
     private final UserService userService;
     private final CoursService coursService;
     private final SupportService supportService;
+    private final ForumService forumService;
 
     public PageController(UserRepository userRepo,
                           BCryptPasswordEncoder passwordEncoder,
                           UserService userService,
                           CoursService coursService,
-                          SupportService supportService) {
+                          SupportService supportService,
+                          ForumService forumService) {
         this.userRepo = userRepo;
         this.passwordEncoder = passwordEncoder;
         this.userService = userService;
         this.coursService = coursService;
         this.supportService = supportService;
+        this.forumService = forumService;
     }
 
     // ✅ Login
@@ -101,6 +105,7 @@ public class PageController {
         return coursService.getCoursParId(id).map(cours -> {
             model.addAttribute("cours", cours);
             model.addAttribute("supports", supportService.getSupportsParCours(cours));
+            model.addAttribute("messages", forumService.getMessagesParCours(cours));
             return "liste-supports";
         }).orElse("redirect:/enseignant/mes-cours");
     }
@@ -159,4 +164,28 @@ public class PageController {
         }
         return "redirect:/enseignant/mes-cours";
     }
+
+    // ✅ Ajouter un message dans le forum (enseignant)
+    @PostMapping("/enseignant/cours/{id}/forum-ajouter")
+    public String ajouterMessageForumParEnseignant(@PathVariable Long id,
+                                                   @RequestParam("contenu") String contenu,
+                                                   @AuthenticationPrincipal(expression = "username") String email) {
+        Optional<Cours> coursOpt = coursService.getCoursParId(id);
+        if (coursOpt.isPresent()) {
+            Cours cours = coursOpt.get();
+            User enseignant = userService.findByEmail(email);
+            forumService.ajouterMessage(cours, enseignant, contenu);
+            return "redirect:/enseignant/cours/" + id + "/supports";
+        }
+        return "redirect:/enseignant/mes-cours";
+    }
+    @PostMapping("/enseignant/cours/{coursId}/forum/{messageId}/supprimer")
+    public String supprimerMessageForum(@PathVariable Long coursId,
+                                        @PathVariable Long messageId,
+                                        @AuthenticationPrincipal(expression = "username") String email) {
+        User user = userService.findByEmail(email);
+        forumService.supprimerMessage(messageId, user);
+        return "redirect:/enseignant/cours/" + coursId + "/supports";
+    }
+
 }

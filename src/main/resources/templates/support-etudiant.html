@@ -1,6 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:replace="layout-dashboard :: layout(~{::section})"
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Supports du cours</title>
+</head>
+
+<body th:replace="layout-dashboard :: layout(~{::section})"
       th:with="pageTitle='Supports du cours', pageContent=~{::section}">
 
 <section style="background-color: #f8f9fa; padding: 2rem; border-radius: 1rem;">
@@ -54,7 +58,7 @@
             <div class="btn-group">
                 <a th:href="@{/etudiant/support/{id}/voir(id=${support.id})}"
                    th:classappend="${supportsVus[support.id]} ? 'btn btn-success btn-sm' : 'btn btn-outline-secondary btn-sm'"
-                   th:attr="title=${supportsVus[support.id]} ? 'Support d\u00e9j\u00e0 vu' : 'Marquer comme vu'">
+                   th:attr="title=${supportsVus[support.id]} ? 'Support déjà vu' : 'Marquer comme vu'">
                     <i class="bi" th:classappend="${supportsVus[support.id]} ? 'bi-check-circle-fill' : 'bi-circle'"></i>
                 </a>
                 <a th:href="${support.lien}" target="_blank" class="btn btn-purple btn-sm">
@@ -85,7 +89,7 @@
     <!-- Forum de discussion -->
     <div class="card-section">
         <h4 class="mb-3"><i class="bi bi-chat-dots-fill me-2"></i>Forum de discussion du cours</h4>
-        <form th:action="@{'/etudiant/cours/' + ${cours.id} + '/forum-int\u00e9gr\u00e9'}" method="post">
+        <form th:action="@{'/etudiant/cours/' + ${cours.id} + '/forum-ajouter'}" method="post">
             <div class="mb-3">
                 <textarea name="contenu" class="form-control" rows="3"
                           placeholder="Posez une question ou partagez un avis..." required></textarea>
@@ -112,6 +116,7 @@
             <div class="mt-2" th:text="${msg.contenu}"></div>
         </div>
     </div>
-
 </section>
+
+</body>
 </html>
