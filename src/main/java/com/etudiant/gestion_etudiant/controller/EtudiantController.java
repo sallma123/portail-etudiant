@@ -29,8 +29,6 @@ public class EtudiantController {
     @Autowired private ForumService forumService;
     @Autowired private NotificationService notificationService;
 
-
-    // 📚 Liste des cours disponibles
     @GetMapping("/cours-disponibles")
     public String coursDisponibles(@RequestParam(required = false) String categorie,
                                    Model model,
@@ -49,7 +47,6 @@ public class EtudiantController {
                 .filter(c -> !coursInscrits.contains(c))
                 .collect(Collectors.toList());
 
-        // 🔍 Filtrage par catégorie si nécessaire
         if (categorie != null && !categorie.isEmpty()) {
             coursNonInscrits = coursNonInscrits.stream()
                     .filter(c -> c.getCategorie() != null && c.getCategorie().equalsIgnoreCase(categorie))
@@ -58,28 +55,23 @@ public class EtudiantController {
 
         model.addAttribute("coursDisponibles", coursNonInscrits);
         model.addAttribute("inscriptions", inscriptions);
-        model.addAttribute("categorie", categorie); // Pour garder la sélection
+        model.addAttribute("categorie", categorie);
         return "cours-disponibles";
     }
 
-
-    // ✅ Inscription à un cours
     @GetMapping("/s-inscrire/{coursId}")
     public String inscrire(@PathVariable Long coursId, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Cours cours = coursRepository.findById(coursId).orElseThrow();
 
-        // Inscrire l'étudiant
         inscriptionService.inscrireEtudiant(etudiant, cours);
 
-        // 🔔 Notifier l'enseignant
         String message = etudiant.getPrenom() + " " + etudiant.getNom() + " s’est inscrit à votre cours : " + cours.getTitre();
         notificationService.envoyerNotification(cours.getEnseignant(), message);
 
         return "redirect:/etudiant/cours-disponibles";
     }
 
-    // ✅ Page support + forum
     @GetMapping("/cours/{id}/supports")
     public String voirSupports(@PathVariable Long id, Model model, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -89,7 +81,6 @@ public class EtudiantController {
             return "redirect:/etudiant/cours-disponibles";
         }
 
-        // 📁 Supports
         List<Support> supports = supportRepository.findByCours(cours);
         Map<Long, Boolean> vus = new HashMap<>();
         boolean supportsNonVus = false;
@@ -105,19 +96,22 @@ public class EtudiantController {
         model.addAttribute("supportsVus", vus);
         model.addAttribute("supportsNonVus", supportsNonVus);
 
-        // 🎯 Quiz + certificat
         Optional<Quiz> quizOpt = quizService.getQuizByCours(cours);
         if (quizOpt.isPresent()) {
             Quiz quiz = quizOpt.get();
             model.addAttribute("quizExiste", true);
             model.addAttribute("quiz", quiz);
 
-            Optional<Resultat> resultatOpt = resultatService.getByEtudiantAndQuiz(etudiant, quiz);
+            // ✅ Vérifie si tous les supports ont été vus
+            boolean peutPasserQuiz = supportVuService.tousLesSupportsVus(etudiant, cours);
+            model.addAttribute("peutPasserQuiz", peutPasserQuiz);
+
+            Optional<Inscription> inscriptionOpt = inscriptionRepository.findByEtudiantAndCours(etudiant, cours);
             boolean certificatDisponible = false;
 
-            if (resultatOpt.isPresent()) {
-                double note = resultatOpt.get().getNote();
-                certificatDisponible = note >= quiz.getSeuil();
+            if (inscriptionOpt.isPresent()) {
+                Inscription inscription = inscriptionOpt.get();
+                certificatDisponible = inscription.isCertificatObtenu(); // ✅ vérifie le bon champ
 
                 if (certificatDisponible) {
                     String nomFichier = etudiant.getPrenom().replaceAll(" ", "_") + "_" +
@@ -126,22 +120,19 @@ public class EtudiantController {
                     model.addAttribute("nomFichier", nomFichier);
                 }
             }
-
             model.addAttribute("certificatDisponible", certificatDisponible);
+
         } else {
             model.addAttribute("quizExiste", false);
         }
 
-        // 💬 Forum intégré
         model.addAttribute("messages", forumService.getMessagesParCours(cours));
         model.addAttribute("nouveauMessage", new MessageForum());
         model.addAttribute("utilisateurConnecte", etudiant);
 
-
         return "support-etudiant";
     }
 
-    // ✅ Envoi d'un message dans le forum
     @PostMapping("/cours/{id}/forum-ajouter")
     public String posterMessageForum(@PathVariable Long id,
                                      @RequestParam("contenu") String contenu,
@@ -150,7 +141,6 @@ public class EtudiantController {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
         Cours cours = coursRepository.findById(id).orElseThrow();
 
-        // Enregistrement du message
         MessageForum message = new MessageForum();
         message.setAuteur(etudiant);
         message.setCours(cours);
@@ -158,7 +148,6 @@ public class EtudiantController {
         message.setDate(LocalDateTime.now());
         forumService.ajouterMessage(message);
 
-        // 🔔 Notifications aux autres étudiants inscrits
         List<Inscription> inscriptions = inscriptionRepository.findByCours(cours);
         for (Inscription insc : inscriptions) {
             User autreEtudiant = insc.getEtudiant();
@@ -170,7 +159,6 @@ public class EtudiantController {
             }
         }
 
-        // 🔔 Notification à l'enseignant
         User enseignant = cours.getEnseignant();
         if (!enseignant.getId().equals(etudiant.getId())) {
             notificationService.envoyerNotification(
@@ -182,10 +170,6 @@ public class EtudiantController {
         return "redirect:/etudiant/cours/" + id + "/supports";
     }
 
-
-
-
-    // ✅ Marquer un support comme vu
     @GetMapping("/support/{id}/voir")
     public String voirSupport(@PathVariable Long id, @AuthenticationPrincipal UserDetails userDetails) {
         User etudiant = userRepository.findByEmail(userDetails.getUsername()).orElseThrow();
@@ -195,6 +179,7 @@ public class EtudiantController {
         Long coursId = support.getCours().getId();
         return "redirect:/etudiant/cours/" + coursId + "/supports";
     }
+
     @PostMapping("/cours/{coursId}/forum/{messageId}/supprimer")
     public String supprimerMessageForum(@PathVariable Long coursId,
                                         @PathVariable Long messageId,
@@ -203,5 +188,4 @@ public class EtudiantController {
         forumService.supprimerMessage(messageId, user);
         return "redirect:/etudiant/cours/" + coursId + "/supports";
     }
-
 }

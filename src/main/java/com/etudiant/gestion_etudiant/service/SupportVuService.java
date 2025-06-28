@@ -45,4 +45,14 @@ public class SupportVuService {
             inscriptionService.mettreAJourProgression(etudiant, cours, progression);
         }
     }
+
+    public boolean tousLesSupportsVus(User etudiant, Cours cours) {
+        long totalSupports = supportRepository.countByCours(cours);
+
+        // Aucun support = autoriser quiz
+        if (totalSupports == 0) return true;
+
+        long supportsVus = supportVuRepository.countByEtudiantAndSupport_Cours(etudiant, cours);
+        return supportsVus == totalSupports;
+    }
 }
