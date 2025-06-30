@@ -44,7 +44,6 @@
         }
     </style>
 
-    <!-- Header avec retour -->
     <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded shadow-sm mb-4">
         <h3 class="text-dark">
             <i class="bi bi-folder-fill me-2"></i>Supports du cours :
@@ -106,7 +105,7 @@
         <form th:action="@{'/enseignant/cours/' + ${cours.id} + '/forum-ajouter'}" method="post">
             <div class="mb-3">
                 <textarea name="contenu" class="form-control" rows="3"
-                          placeholder="Ajoutez une question ou une remarque..." required></textarea>
+                          placeholder="Ajoutez une réponse ou une précision…" required></textarea>
             </div>
             <button type="submit" class="btn btn-purple">
                 <i class="bi bi-send-fill me-1"></i>Envoyer
